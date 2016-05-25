@@ -23,7 +23,7 @@ class ScageAppTest extends TestCase("app") {
      * Rigourous Tests :-)
      */
     def testOK() = {
-      LightCyclesOffline.main(Array[String]())
+      NonogramsOffline.main(Array[String]())
       assertTrue(true)
     }
     //def testKO() = assertTrue(false);
