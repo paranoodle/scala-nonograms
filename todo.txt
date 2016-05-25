@@ -1,0 +1,16 @@
+Views
+-----
+- Grid view
+- Menu view(s)
+
+Models
+------
+- Grid
+
+Controllers
+-----------
+- Game
+
+Content
+-------
+- Test grids
