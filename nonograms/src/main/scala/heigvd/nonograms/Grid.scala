@@ -22,8 +22,8 @@ class Grid {
       }
       solution = listy :: solution
     }
-    println(solution.size)
-    println(solution(0).size)
+    //println(solution.size)
+    //println(solution(0).size)
 
     generateSolutionRow()
     generateSolutionCol()
@@ -59,8 +59,8 @@ class Grid {
 
   def generateSolutionCol() {
     // columns
-    println(solution.size)
-    println(solution(0).size)
+    //println(solution.size)
+    //println(solution(0).size)
 
     for (xi <- 0 until solution(0).size) {
 
