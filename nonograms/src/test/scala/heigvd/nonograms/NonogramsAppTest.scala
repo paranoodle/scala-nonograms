@@ -3,9 +3,9 @@ package heigvd.nonograms
 import junit.framework._
 import Assert._
 
-object ScageAppTest {
+object NonogramsAppTest {
     def suite: Test = {
-        val suite = new TestSuite(classOf[ScageAppTest])
+        val suite = new TestSuite(classOf[NonogramsAppTest])
         suite
     }
 
@@ -17,7 +17,7 @@ object ScageAppTest {
 /**
  * Unit test for simple App.
  */
-class ScageAppTest extends TestCase("app") {
+class NonogramsAppTest extends TestCase("app") {
 
     /**
      * Rigourous Tests :-)
