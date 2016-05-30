@@ -3,29 +3,57 @@ package heigvd.nonograms
 /**
   * Manage a grid with its solution and hints.
   *
-  * Can be created with a existing List[List[Boolean]] or randomly generated.
+  * Can be created with a existing List[List[Boolean]] or randomly generated (with default or specified size)
   * Hints will be created automatically based on the solution.
   */
 
-class Grid(var solution: List[List[Boolean]]) {
-  generateHints()
-
-  def sizeX = solution.size
-  def sizeY = if (sizeX == 0) 0 else solution(0).size
+class Grid(any:Boolean) {
 
   type Number = Int
   type Bool = Boolean
   type Hints = List[List[Number]]
+  type Solution = List[List[Boolean]]
   var rows_hint: Hints = List()
   var cols_hint: Hints = List()
+  var solution: Solution = List()
 
+  def sizeX = solution.size
+  def sizeY = if (solution.size == 0) 0 else solution.map(_.size).max
 
-  // generate a random grid of specified size (default: 10x8) and creates its hints
-  def this(sizeX: Int = 10, sizeY: Int = 8) = {
-    this(List())
+  // creates a grid with given values, and generates hints
+  def this(sol: List[List[Boolean]]) = {
+    this(true)
+    solution = sol
+    require(sizeX > 0)
+    require(sizeY > 0)
+    generateHints()
+  }
+
+  // generates a random grid of default size 10x8
+  def this() {
+    this(true)
+    generateRandom(10, 8)
+  }
+
+  // generates a square random grid of specified size
+  def this(sized:Int) {
+    this(true)
+    require(sized > 0)
+    generateRandom(sized, sized)
+  }
+
+  // generates a rectangular random grid of specified size
+  def this(sizeX: Int, sizeY: Int) = {
+    this(true)
+    require(sizeX > 0)
+    require(sizeY > 0)
+    generateRandom(sizeX, sizeY)
+  }
+
+  // generates a rectangular random grid of specified size
+  private def generateRandom(sizeX: Int, sizeY: Int) = {
     val r = scala.util.Random
     for (x <- 0 until sizeX) {
-
       var col: List[Bool] = List()
       for (y <- 0 until sizeY) {
         col = r.nextBoolean() :: col
