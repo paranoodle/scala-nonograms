@@ -14,17 +14,22 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   }
 
   backgroundColor = WHITE
-  
+
   val g = (new Grid)
   g.printGrid()
   g.printHints()
-  
+
+  val userGrid = new UserGrid(g)
+  userGrid.generateRandomState() // RANDOM state to test!
+  userGrid.printMyGrid()
+  val userSol = userGrid.userSolution
+
   val grid = g.solution
   val sizeX = g.sizeX
   val sizeY = g.sizeY
   val rowHintMax = g.rows_hint.map(_.size).max
   val colHintMax = g.cols_hint.map(_.size).max
-  
+
   val gridSpacing = 21
   val gridOffset = 10
   val fullSize = 18
@@ -33,7 +38,7 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   // Both are designed to center [grid+hints] in the middle of the window.
   val originX = (windowWidth - (gridSpacing * (sizeX - rowHintMax))) / 2
   val originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
-  
+
   render {
     // horizontal grid lines
     val lenHorizontal = gridSpacing * sizeX
@@ -42,33 +47,56 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
       val pos = originY + (sizeY - y) * gridSpacing
       drawLine(Vec(originX - lenHints, pos), Vec(originX + lenHorizontal, pos), GRAY)
     }
-    
+
     // vertical grid lines
     val lenVertical = gridSpacing * (sizeY + colHintMax)
     for (x <- 0 to sizeX) {
       val pos = originX + (sizeX - x) * gridSpacing
       drawLine(Vec(pos, originY), Vec(pos, originY + lenVertical), GRAY)
     }
-    
+
     // writing row hints
     for (row <- 0 until g.rows_hint.size; hint <- 0 until g.rows_hint(row).size) {
       val posX = originX + gridOffset - ((g.rows_hint(row).size - hint) * gridSpacing)
       val posY = originY - gridOffset + 2 + (sizeY - row) * gridSpacing
-      print(g.rows_hint(row)(hint), Vec(posX, posY), BLACK, align="center")
+      print(g.rows_hint(row)(hint), Vec(posX, posY), BLACK, align = "center")
     }
     // writing column hints
     for (col <- 0 until g.cols_hint.size; hint <- 0 until g.cols_hint(col).size) {
       val posX = originX + gridOffset + col * gridSpacing
       val posY = originY - gridOffset + 2 + ((sizeY + g.cols_hint(col).size - hint) * gridSpacing)
-      print(g.cols_hint(col)(hint), Vec(posX, posY), BLACK, align="center")
+      print(g.cols_hint(col)(hint), Vec(posX, posY), BLACK, align = "center")
     }
-    
-    // filled squares
+
+    // filled squares for solution
     for (x <- 0 until sizeX; y <- 0 until sizeY) {
       if (grid(x)(y)) {
         val posX = originX + gridOffset + (x * (gridSpacing))
         val posY = originY - gridOffset + ((sizeY - y) * (gridSpacing))
         drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, BLACK)
+      }
+    }
+
+    // filled squares for mygrid current game
+    for (x <- 0 until sizeX; y <- 0 until sizeY) {
+      val posX = originX + gridOffset + (x * (gridSpacing))
+      val posY = originY - gridOffset + ((sizeY - y) * (gridSpacing))
+
+      // to hide solution (maybe to remove)
+      drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, WHITE)
+
+      userSol(x)(y) match {
+        case userGrid.Empty() =>
+          print("X", Vec(posX, posY + 2), BLACK, align = "center")
+        case userGrid.Filled() =>
+          drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, DARK_GRAY)
+        case userGrid.None() =>
+        // does nothing
+        case userGrid.MaybeEmpty() =>
+          print("?", Vec(posX, posY + 2), RED, align = "center")
+        case userGrid.MaybeFilled() =>
+          drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, RED)
+          print("?", Vec(posX, posY + 2), WHITE, align = "center")
       }
     }
   }

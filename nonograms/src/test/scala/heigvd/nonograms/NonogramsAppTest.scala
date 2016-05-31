@@ -73,5 +73,55 @@ class NonogramsAppTest extends TestCase("app") {
     assertEquals(true, g.solution(4)(0))
   }
 
+  def testMyGridMySolution() = {
+    val g = new Grid()
+    val ug = new UserGrid(g)
+
+    // test size
+    assertEquals(g.sizeX, ug.userSolution.size)
+    assertEquals(g.sizeY, ug.userSolution(0).size)
+
+    // helper to check type
+    def checkType(value: ug.CellType, typ: ug.CellType): Boolean = value match {
+      case `typ` => true
+      case _ => false
+    }
+
+    // test all none at begining
+    for (x <- ug.userSolution; y <- x) {
+      assert(checkType(y, ug.None()))
+    }
+
+    // test affectation
+    ug.change(0, 0, ug.MaybeEmpty())
+    ug.change(0, 1, ug.MaybeFilled())
+    ug.change(1, 0, ug.Empty())
+    ug.change(1, 1, ug.Filled())
+    assert(checkType(ug.userSolution(0)(0), ug.MaybeEmpty()))
+    assert(checkType(ug.userSolution(0)(1), ug.MaybeFilled()))
+    assert(checkType(ug.userSolution(1)(0), ug.Empty()))
+    assert(checkType(ug.userSolution(1)(1), ug.Filled()))
+
+    // test reset
+    ug.removeAllMaybe()
+    // must be reset
+    assert(checkType(ug.userSolution(0)(0), ug.None()))
+    assert(checkType(ug.userSolution(0)(1), ug.None()))
+    // must not have changed with reset
+    assertFalse(checkType(ug.userSolution(1)(0), ug.None()))
+    assertFalse(checkType(ug.userSolution(1)(1), ug.None()))
+
+    // test maybe validation
+    ug.change(0, 0, ug.MaybeEmpty())
+    ug.change(0, 1, ug.MaybeFilled())
+    ug.validateAllMaybe()
+    assert(checkType(ug.userSolution(0)(0), ug.Empty()))
+    assert(checkType(ug.userSolution(0)(1), ug.Filled()))
+
+    // reset the game
+    ug.resetGame()
+    assert(checkType(ug.userSolution(1)(0), ug.None()))
+    assert(checkType(ug.userSolution(1)(1), ug.None()))
+  }
 
 }
