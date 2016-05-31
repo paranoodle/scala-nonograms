@@ -1,15 +1,22 @@
 Views
 -----
 - Grid view
+	- playing (user grid)
+	- solution view (user grid & solution)
 - Menu view(s)
 
 Models
 ------
-- Grid
+- Grid - DONE & TESTED
+- User Grid - DONE & TESTED
 
 Controllers
 -----------
 - Game
+	- set state : None, Empty, Filled, Maybe E/F
+	- reset game
+	- remove all maybe’s
+	- validate all maybe’s
 
 Content
 -------
