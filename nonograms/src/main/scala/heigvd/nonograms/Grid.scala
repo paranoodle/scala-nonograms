@@ -7,7 +7,7 @@ package heigvd.nonograms
   * Hints will be created automatically based on the solution.
   */
 
-class Grid(any:Boolean) {
+class Grid(any: Boolean) {
 
   type Number = Int
   type Bool = Boolean
@@ -18,6 +18,7 @@ class Grid(any:Boolean) {
   var solution: Solution = List()
 
   def sizeX = solution.size
+
   def sizeY = if (solution.size == 0) 0 else solution.map(_.size).max
 
   // creates a grid with given values, and generates hints
@@ -36,7 +37,7 @@ class Grid(any:Boolean) {
   }
 
   // generates a square random grid of specified size
-  def this(sized:Int) {
+  def this(sized: Int) {
     this(true)
     require(sized > 0)
     generateRandom(sized, sized)
@@ -100,11 +101,21 @@ class Grid(any:Boolean) {
   private def generateHints() = {
     // columns
     for (x <- solution)
-      cols_hint :+= x.foldLeft(new IntermState)((state, bool) => state.nextState(bool)).finish
+      cols_hint :+= generateHintsFromList(x)
 
     // rows
     for (yi <- 0 until sizeY)
-      rows_hint :+= solution.map(x => x(yi)).foldLeft(new IntermState)((state, bool) => state.nextState(bool)).finish
+      rows_hint :+= generateHintsFromList(solution.map(x => x(yi)))
+  }
+
+  // take a list of Boolean and return the corresponding hints as a list of Number
+  def generateHintsFromList(x: List[Boolean]): List[Number] = {
+    x.foldLeft(new IntermState)((state, bool) => state.nextState(bool)).finish
+  }
+
+  // count the number of filled (true) cells in a given solution
+  def numberFilled(sol: List[Boolean] = solution.flatten): Int = {
+    sol.foldLeft(0)((x, b) => if (b) x + 1 else x)
   }
 
   // print out the grid (the solution)
