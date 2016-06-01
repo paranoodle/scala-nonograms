@@ -85,15 +85,15 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
       drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, WHITE)
 
       userSol(x)(y) match {
-        case userGrid.Empty() =>
+        case Empty() =>
           print("X", Vec(posX, posY + 2), BLACK, align = "center")
-        case userGrid.Filled() =>
+        case Filled() =>
           drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, DARK_GRAY)
-        case userGrid.None() =>
+        case None() =>
         // does nothing
-        case userGrid.MaybeEmpty() =>
+        case MaybeEmpty() =>
           print("?", Vec(posX, posY + 2), RED, align = "center")
-        case userGrid.MaybeFilled() =>
+        case MaybeFilled() =>
           drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, RED)
           print("?", Vec(posX, posY + 2), WHITE, align = "center")
       }

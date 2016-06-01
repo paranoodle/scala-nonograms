@@ -1,23 +1,22 @@
 package heigvd.nonograms
 
+// Types of cells fot the current game played by a user.
+sealed trait CellType;
+// No current state (the default state for all cells)
+case class None() extends CellType
+// Current state is empty (the user believe the state is empty, and solution=false)
+case class Empty() extends CellType
+// Current state is filles (the user believe the state is filled, and solution=true)
+case class Filled() extends CellType
+// same as empty, but the user is not sure yet
+case class MaybeEmpty() extends CellType
+// same as filled, but the user is not sure yet
+case class MaybeFilled() extends CellType
 
 /**
   * Grid currently played by a user, with game state.
   */
 class UserGrid(grid: Grid) {
-
-
-  sealed trait CellType;
-
-  case class None() extends CellType
-
-  case class Empty() extends CellType
-
-  case class Filled() extends CellType
-
-  case class MaybeEmpty() extends CellType
-
-  case class MaybeFilled() extends CellType
 
   // the array of cell state of the current game
   var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
