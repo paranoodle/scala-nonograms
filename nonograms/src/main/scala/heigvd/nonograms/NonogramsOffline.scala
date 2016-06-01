@@ -79,8 +79,7 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
 
     // filled squares for mygrid current game
     for (x <- 0 until sizeX; y <- 0 until sizeY) {
-      val posX = originX + gridOffset + (x * (gridSpacing))
-      val posY = originY - gridOffset + ((sizeY - y) * (gridSpacing))
+      val (posX,posY) = arrayToScreen(x,y,gridOffset)
 
       // to hide solution (maybe to remove)
       drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, WHITE)
@@ -108,4 +107,18 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   rightMouse(onBtnDown = {m =>
     println("RIGHT CLICK!! " + m)
   })
+
+  def arrayToScreen(x: Int, y: Int, offset: Int = 0): (Int, Int) = {
+    (
+      originX + offset + (x * (gridSpacing)),
+      originY - offset + ((sizeY - y) * (gridSpacing))
+      )
+  }
+
+  def screenToArray(xs: Double, ys: Double, offset: Int = 0): (Int, Int) = {
+    (
+      ((xs - originX - offset) / gridSpacing).floor.toInt,
+      (sizeY - ((ys - originY + offset) / gridSpacing)).floor.toInt
+      )
+  }
 }
