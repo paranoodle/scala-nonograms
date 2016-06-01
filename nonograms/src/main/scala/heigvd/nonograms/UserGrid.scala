@@ -14,6 +14,8 @@ case class Filled() extends CellType
 case class MaybeEmpty() extends CellType
 // same as filled, but the user is not sure yet
 case class MaybeFilled() extends CellType
+// same as empty, but the user tried to put (wrongly) a filled state: its a penalty state
+case class Tried() extends CellType
 
 /**
   * Grid currently played by a user, with game state.
@@ -62,8 +64,17 @@ class UserGrid(grid: Grid) {
     case _ => false
   }
 
+  // count the number of filled cells
   def numberFilled (): Int = {
     grid.numberFilled(userSolution.flatten.map(c => fromCellTypeToBoolean(c)).toList)
+  }
+
+  // count the penalties
+  def numberPenalties (): Int = {
+    grid.numberFilled(userSolution.flatten.map(c => c match {
+      case Tried() => true
+      case _ => false
+    }).toList)
   }
 
   /**
@@ -80,9 +91,8 @@ class UserGrid(grid: Grid) {
   def checkGameFinishedAgainstSolution(againstSolution:Boolean = true): Boolean = {
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) match {
-        case Empty() => if (againstSolution && grid.solution(x)(y)) return false
+        case Empty()|None()|Tried() => if (againstSolution && grid.solution(x)(y)) return false
         case Filled() => if (againstSolution && !grid.solution(x)(y)) return false
-        case None() => if (againstSolution && grid.solution(x)(y)) return false
         case _ => return false
       }
     }
@@ -140,6 +150,7 @@ class UserGrid(grid: Grid) {
           case None() => "N"
           case MaybeEmpty() => "m"
           case MaybeFilled() => "M"
+          case Tried() => "!"
         }
         printf("%s", x)
       }
@@ -151,12 +162,13 @@ class UserGrid(grid: Grid) {
   def generateRandomState() = {
     val r = scala.util.Random
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
-      userSolution(x)(y) = r.nextInt(5) match {
+      userSolution(x)(y) = r.nextInt(6) match {
         case 0 => None()
         case 1 => Empty()
         case 2 => Filled()
         case 3 => MaybeEmpty()
         case 4 => MaybeFilled()
+        case 5 => Tried()
       }
     }
   }

@@ -1,16 +1,9 @@
 package heigvd.nonograms
 
 import com.github.dunnololda.scage.ScageLib._
-import com.github.dunnololda.scage.support.tracer3.{CoordTracer, DefaultTrace}
 import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
-import scala.collection.mutable.ArrayBuffer
-
 object NonogramsOffline extends Screen("Nonograms") with MultiController {
-  private var ang = 0f
-  actionStaticPeriod(100) {
-    ang += 5
-  }
 
   val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
   val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
@@ -57,7 +50,6 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   g.printHints()
 
   val userGrid = new UserGrid(g)
-  //userGrid.generateRandomState() // RANDOM state to test!
   userGrid.printMyGrid()
   val userSol = userGrid.userSolution
 
@@ -81,7 +73,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     val lenHorizontal = gridSpacing * sizeX
     val lenHints = gridSpacing * rowHintMax
     for (y <- 0 to sizeY) {
-      val pos = originY + (sizeY - y) * gridSpacing
+      val (_, pos) = arrayToScreen(0, y)
       val color = if (y == 0 || y == sizeY) BLACK else if (y%5 == 0) METRO_ORANGE else GRAY
       drawLine(Vec(originX - lenHints, pos), Vec(originX + lenHorizontal, pos), color)
     }
@@ -89,29 +81,26 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     // vertical grid lines
     val lenVertical = gridSpacing * (sizeY + colHintMax)
     for (x <- 0 to sizeX) {
-      val pos = originX + (sizeX - x) * gridSpacing
+      val (pos, _) = arrayToScreen((sizeX - x), 0)
       val color = if (x == 0 || x == sizeX) BLACK else if (x%5 == 0) METRO_ORANGE else GRAY
       drawLine(Vec(pos, originY), Vec(pos, originY + lenVertical), color)
     }
 
     // writing row hints
     for (row <- 0 until g.rows_hint.size; hint <- 0 until g.rows_hint(row).size) {
-      val posX = originX + gridOffset - ((g.rows_hint(row).size - hint) * gridSpacing)
-      val posY = originY - gridOffset + 2 + (sizeY - row) * gridSpacing
-      print(g.rows_hint(row)(hint), Vec(posX, posY), BLACK, align = "center")
+      val (posX, posY) = arrayToScreen(- (g.rows_hint(row).size - hint), row, gridOffset)
+      print(g.rows_hint(row)(hint), Vec(posX, posY + 2), BLACK, align = "center")
     }
     // writing column hints
     for (col <- 0 until g.cols_hint.size; hint <- 0 until g.cols_hint(col).size) {
-      val posX = originX + gridOffset + col * gridSpacing
-      val posY = originY - gridOffset + 2 + ((sizeY + g.cols_hint(col).size - hint) * gridSpacing)
+      val (posX, posY) = arrayToScreen(col, -(g.cols_hint(col).size - hint), gridOffset)
       print(g.cols_hint(col)(hint), Vec(posX, posY), BLACK, align = "center")
     }
 
     // filled squares for solution
     /*for (x <- 0 until sizeX; y <- 0 until sizeY) {
       if (grid(x)(y)) {
-        val posX = originX + gridOffset + (x * (gridSpacing))
-        val posY = originY - gridOffset + ((sizeY - y) * (gridSpacing))
+        val (posX,posY) = arrayToScreen(x,y,gridOffset)
         drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, BLACK)
       }
     }*/
@@ -135,7 +124,15 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
         case MaybeFilled() =>
           drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, METRO_BLUE)
           print("?", Vec(posX, posY + 2), WHITE, align = "center")
+        case Tried() =>
+          print("!", Vec(posX, posY + 2), METRO_RED, align = "center")
       }
+    }
+
+    // current state of game
+    print("Playing: " + userGrid.numberFilled + "/" + g.numberFilled(), Vec(originX, originY - fullSize), BLACK)
+    if (userGrid.numberPenalties() > 0) {
+      print("CHEATING: " + userGrid.numberPenalties() + "!", originX + 0.0f, originY - 3 * fullSize + 0.0f, 24.0f, METRO_RED, "default")
     }
   }
 
@@ -158,7 +155,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
         val valid = !checkMode || (checkMode && grid(x)(y))
         println(valid)
         userSol(x)(y) = userSol(x)(y) match {
-          case None() if (valid) => Filled()
+          case None()  => if (valid) Filled() else Tried()
           case Empty() => None()
           case Filled() => None()
           case _ => userSol(x)(y)
