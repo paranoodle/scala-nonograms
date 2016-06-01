@@ -26,7 +26,10 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   val validateButton = new Button(110, 330, 100, 70, "Apply\nDraft")
   var maybeStatus = false
 
-  val g = (new Grid)
+  var checkMode = true
+
+  //val g = (new Grid)
+  val g = new Grid(List(List(true, false), List(false, true)))
   g.printGrid()
   g.printHints()
 
@@ -93,20 +96,20 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
     }
 
     // filled squares for solution
-    for (x <- 0 until sizeX; y <- 0 until sizeY) {
+    /*for (x <- 0 until sizeX; y <- 0 until sizeY) {
       if (grid(x)(y)) {
         val posX = originX + gridOffset + (x * (gridSpacing))
         val posY = originY - gridOffset + ((sizeY - y) * (gridSpacing))
         drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, BLACK)
       }
-    }
+    }*/
 
     // filled squares for mygrid current game
     for (x <- 0 until sizeX; y <- 0 until sizeY) {
       val (posX,posY) = arrayToScreen(x,y,gridOffset)
 
       // to hide solution (maybe to remove)
-      drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, WHITE)
+      //drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, WHITE)
 
       userSol(x)(y) match {
         case Empty() =>
@@ -157,11 +160,23 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
             case _ => userSol(x)(y)
           }
         } else {
+          val valid = !checkMode || (checkMode && grid(x)(y))
+          println(valid)
           userSol(x)(y) = userSol(x)(y) match {
-            case None() => Filled()
+            case None() if (valid) => Filled()
             case Empty() => None()
             case Filled() => None()
             case _ => userSol(x)(y)
+          }
+
+          if (checkMode) {
+            if (userGrid.checkGameFinishedAgainstSolution()) {
+              println("conglaturation sol")
+            }
+          } else {
+            if (userGrid.checkGameFinishedAgainstHints()) {
+              println("conglaturation hint")
+            }
           }
         }
       } else {
