@@ -104,24 +104,42 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
 
   leftMouse(onBtnDown = {m =>
     println("LEFT CLICK!! " + m)
-    val (x,y) = screenToArray(m:_*)
+    val (x,y) = screenToArray(m.x, m.y)
     if (maybeStatus) {
       userSol(x)(y) = userSol(x)(y) match {
-        case userGrid.None() => userGrid.MaybeFilled()
-        case userGrid.MaybeEmpty() => userGrid.None()
-        case userGrid.MaybeFilled() => userGrid.None()
+        case None() => MaybeFilled()
+        case MaybeEmpty() => None()
+        case MaybeFilled() => None()
+        case _ => userSol(x)(y)
       }
     } else {
       userSol(x)(y) = userSol(x)(y) match {
-        case userGrid.None() => userGrid.Filled()
-        case userGrid.Empty() => userGrid.None()
-        case userGrid.Filled() => userGrid.None()
+        case None() => Filled()
+        case Empty() => None()
+        case Filled() => None()
+        case _ => userSol(x)(y)
       }
     }
   })
 
   rightMouse(onBtnDown = {m =>
     println("RIGHT CLICK!! " + m)
+    val (x,y) = screenToArray(m.x, m.y)
+    if (maybeStatus) {
+      userSol(x)(y) = userSol(x)(y) match {
+        case None() => MaybeEmpty()
+        case MaybeEmpty() => None()
+        case MaybeFilled() => None()
+        case _ => userSol(x)(y)
+      }
+    } else {
+      userSol(x)(y) = userSol(x)(y) match {
+        case None() => Empty()
+        case Empty() => None()
+        case Filled() => None()
+        case _ => userSol(x)(y)
+      }
+    }
   })
 
   def arrayToScreen(x: Int, y: Int, offset: Int = 0): (Int, Int) = {

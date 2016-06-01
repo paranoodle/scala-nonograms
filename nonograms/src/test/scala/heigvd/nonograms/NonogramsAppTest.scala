@@ -82,46 +82,46 @@ class NonogramsAppTest extends TestCase("app") {
     assertEquals(g.sizeY, ug.userSolution(0).size)
 
     // helper to check type
-    def checkType(value: ug.CellType, typ: ug.CellType): Boolean = value match {
+    def checkType(value: CellType, typ: CellType): Boolean = value match {
       case `typ` => true
       case _ => false
     }
 
     // test all none at begining
     for (x <- ug.userSolution; y <- x) {
-      assert(checkType(y, ug.None()))
+      assert(checkType(y, None()))
     }
 
     // test affectation
-    ug.change(0, 0, ug.MaybeEmpty())
-    ug.change(0, 1, ug.MaybeFilled())
-    ug.change(1, 0, ug.Empty())
-    ug.change(1, 1, ug.Filled())
-    assert(checkType(ug.userSolution(0)(0), ug.MaybeEmpty()))
-    assert(checkType(ug.userSolution(0)(1), ug.MaybeFilled()))
-    assert(checkType(ug.userSolution(1)(0), ug.Empty()))
-    assert(checkType(ug.userSolution(1)(1), ug.Filled()))
+    ug.change(0, 0, MaybeEmpty())
+    ug.change(0, 1, MaybeFilled())
+    ug.change(1, 0, Empty())
+    ug.change(1, 1, Filled())
+    assert(checkType(ug.userSolution(0)(0), MaybeEmpty()))
+    assert(checkType(ug.userSolution(0)(1), MaybeFilled()))
+    assert(checkType(ug.userSolution(1)(0), Empty()))
+    assert(checkType(ug.userSolution(1)(1), Filled()))
 
     // test reset
     ug.removeAllMaybe()
     // must be reset
-    assert(checkType(ug.userSolution(0)(0), ug.None()))
-    assert(checkType(ug.userSolution(0)(1), ug.None()))
+    assert(checkType(ug.userSolution(0)(0), None()))
+    assert(checkType(ug.userSolution(0)(1), None()))
     // must not have changed with reset
-    assertFalse(checkType(ug.userSolution(1)(0), ug.None()))
-    assertFalse(checkType(ug.userSolution(1)(1), ug.None()))
+    assertFalse(checkType(ug.userSolution(1)(0), None()))
+    assertFalse(checkType(ug.userSolution(1)(1), None()))
 
     // test maybe validation
-    ug.change(0, 0, ug.MaybeEmpty())
-    ug.change(0, 1, ug.MaybeFilled())
+    ug.change(0, 0, MaybeEmpty())
+    ug.change(0, 1, MaybeFilled())
     ug.validateAllMaybe()
-    assert(checkType(ug.userSolution(0)(0), ug.Empty()))
-    assert(checkType(ug.userSolution(0)(1), ug.Filled()))
+    assert(checkType(ug.userSolution(0)(0), Empty()))
+    assert(checkType(ug.userSolution(0)(1), Filled()))
 
     // reset the game
     ug.resetGame()
-    assert(checkType(ug.userSolution(1)(0), ug.None()))
-    assert(checkType(ug.userSolution(1)(1), ug.None()))
+    assert(checkType(ug.userSolution(1)(0), None()))
+    assert(checkType(ug.userSolution(1)(1), None()))
   }
 
 }
