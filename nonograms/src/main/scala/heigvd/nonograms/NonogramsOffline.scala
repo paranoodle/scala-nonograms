@@ -100,4 +100,12 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
       }
     }
   }
+
+  leftMouse(onBtnDown = {m =>
+    println("CLICK CLICK!! " + m)
+  })
+
+  rightMouse(onBtnDown = {m =>
+    println("RIGHT CLICK!! " + m)
+  })
 }
