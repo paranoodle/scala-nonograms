@@ -1,13 +1,12 @@
 package heigvd.nonograms
 
 import com.github.dunnololda.scage.ScageLib._
-import com.github.dunnololda.scage.ScageScreenApp
 import com.github.dunnololda.scage.support.tracer3.{CoordTracer, DefaultTrace}
 import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
 import scala.collection.mutable.ArrayBuffer
 
-object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
+object NonogramsOffline extends Screen("Nonograms") with MultiController {
   private var ang = 0f
   actionStaticPeriod(100) {
     ang += 5
