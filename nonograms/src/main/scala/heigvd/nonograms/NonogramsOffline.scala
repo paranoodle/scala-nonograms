@@ -3,15 +3,40 @@ package heigvd.nonograms
 import com.github.dunnololda.scage.ScageLib._
 import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
+import scalaj.http._
+
 object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   // start time
   val clock = System.currentTimeMillis()
   val cal = java.util.Calendar.getInstance()
 
+  val baseRequest: HttpRequest = Http(
+    "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonograms/stats")
+  val commitResult = false
+
   // timer to trigger action every second
   val timer = Timer(1000) {
     println("everytime i'm shuffling")
+
+    // "ping"
+    val response: HttpResponse[String] = Http("https://dunnololda.github.io").asString
+    println(response.body)
+
+    // push the current result to server
+    if (commitResult) {
+      val result = baseRequest.postData("{" +
+        "\"user\":\""+ "username" + "\"," +
+        "\"time\":\"" + "2016-05-31" + "\"," +
+        "\"elapsed\":\"" + elapsed + "\"," +
+        "\"score\":\"" + userGrid.numberFilled() + "\"," +
+        "\"finished\":\"" + userGrid.checkGameFinishedAgainstHints() + "\"," +
+        "\"penalty\":\"" + userGrid.numberPenalties() + "\"" +
+        "}").asString
+
+      println(result.body)
+    }
+
   }
 
   val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
@@ -144,9 +169,16 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       print("CHEATING: " + userGrid.numberPenalties() + "!", originX + 0.0f, originY - 3 * fullSize + 0.0f, 24.0f, METRO_RED, "default")
     }
 
-    val clock_now = System.currentTimeMillis()
-    cal.setTimeInMillis(clock_now - clock)
+    cal.setTimeInMillis(elapsed)
     print("Time : "+ Time.current(cal), Vec(originX, originY - 5 * fullSize))
+  }
+
+  def elapsed:Long = {
+    System.currentTimeMillis() - clock
+  }
+
+  interface {
+    print(xml("launcher.info"), 10, 10, 10.0f, BLACK)
   }
 
   leftMouse(onBtnDown = {m =>

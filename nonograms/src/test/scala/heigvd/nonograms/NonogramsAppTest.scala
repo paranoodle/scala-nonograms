@@ -117,7 +117,7 @@ class NonogramsAppTest extends TestCase("app") {
     ug.change(0, 1, MaybeFilled())
     ug.change(1, 0, Empty())
     ug.change(1, 1, Filled())
-    ug.change(1, 2, Filled())
+    ug.change(1, 2, Tried())
     assertTrue(checkType(ug.userSolution(0)(0), MaybeEmpty()))
     assertTrue(checkType(ug.userSolution(0)(1), MaybeFilled()))
     assertTrue(checkType(ug.userSolution(1)(0), Empty()))
