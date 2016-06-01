@@ -13,10 +13,18 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
     ang += 5
   }
 
+  val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
+  val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
+  val METRO_BLUE = new ScageColor("Metro Blue", 0x00, 0xae, 0xdb)
+  val METRO_ORANGE = new ScageColor("Metro Orange", 0xf3, 0x77, 0x35)
+  val METRO_YELLOW = new ScageColor("Metro Yellow", 0xff, 0xc4, 0x25)
+
   backgroundColor = WHITE
 
+  val maybeButton = new Button(10, 400, 200, 70, "To Draft Mode")
+  val cancelButton = new Button(10, 330, 100, 70, "Cancel\nDraft")
+  val validateButton = new Button(110, 330, 100, 70, "Apply\nDraft")
   var maybeStatus = false
-  val maybeToggle = new Button(100, 100, 100, 100, "TEST", BLUE)
 
   val g = (new Grid)
   g.printGrid()
@@ -43,19 +51,32 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   val originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
 
   render {
+    // buttons!
+    if (maybeStatus) {
+      maybeButton.color = GRAY
+      cancelButton.color = METRO_RED
+      validateButton.color = METRO_GREEN
+    } else {
+      maybeButton.color = METRO_BLUE
+      cancelButton.color = WHITE
+      validateButton.color = WHITE
+    }
+
     // horizontal grid lines
     val lenHorizontal = gridSpacing * sizeX
     val lenHints = gridSpacing * rowHintMax
     for (y <- 0 to sizeY) {
       val pos = originY + (sizeY - y) * gridSpacing
-      drawLine(Vec(originX - lenHints, pos), Vec(originX + lenHorizontal, pos), GRAY)
+      val color = if (y == 0 || y == sizeY) BLACK else if (y%5 == 0) METRO_ORANGE else GRAY
+      drawLine(Vec(originX - lenHints, pos), Vec(originX + lenHorizontal, pos), color)
     }
 
     // vertical grid lines
     val lenVertical = gridSpacing * (sizeY + colHintMax)
     for (x <- 0 to sizeX) {
       val pos = originX + (sizeX - x) * gridSpacing
-      drawLine(Vec(pos, originY), Vec(pos, originY + lenVertical), GRAY)
+      val color = if (x == 0 || x == sizeX) BLACK else if (x%5 == 0) METRO_ORANGE else GRAY
+      drawLine(Vec(pos, originY), Vec(pos, originY + lenVertical), color)
     }
 
     // writing row hints
@@ -95,54 +116,81 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
         case None() =>
           // does nothing
         case MaybeEmpty() =>
-          print("?", Vec(posX, posY + 2), RED, align = "center")
+          print("?", Vec(posX, posY + 2), METRO_BLUE, align = "center")
         case MaybeFilled() =>
-          drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, RED)
+          drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, METRO_BLUE)
           print("?", Vec(posX, posY + 2), WHITE, align = "center")
       }
     }
   }
 
   leftMouse(onBtnDown = {m =>
-    if (maybeToggle.checkCollision(m.x,m.y)) {
-      maybeStatus = !maybeStatus
-      println("Maybe Toggle!")
+    if (maybeButton.checkCollision(m.x,m.y) && maybeButton.active) {
+      maybeButton.active = false
+      cancelButton.active = true
+      validateButton.active = true
+      maybeStatus = true
+      println("Switching to draft mode")
+    } else if (cancelButton.checkCollision(m.x,m.y) && cancelButton.active) {
+      userGrid.removeAllMaybe()
+      maybeButton.active = true
+      cancelButton.active = false
+      validateButton.active = false
+      maybeStatus = false
+      println("Cancelled draft")
+    } else if (validateButton.checkCollision(m.x,m.y) && validateButton.active) {
+      userGrid.validateAllMaybe()
+      maybeButton.active = true
+      cancelButton.active = false
+      validateButton.active = false
+      maybeStatus = false
+      println("Validated draft")
     } else {
       val (x,y) = screenToArray(m.x, m.y)
-      if (maybeStatus) {
-        userSol(x)(y) = userSol(x)(y) match {
-          case None() => MaybeFilled()
-          case MaybeEmpty() => None()
-          case MaybeFilled() => None()
-          case _ => userSol(x)(y)
+
+      if ((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY)) {
+        if (maybeStatus) {
+          userSol(x)(y) = userSol(x)(y) match {
+            case None() => MaybeFilled()
+            case MaybeEmpty() => None()
+            case MaybeFilled() => None()
+            case _ => userSol(x)(y)
+          }
+        } else {
+          userSol(x)(y) = userSol(x)(y) match {
+            case None() => Filled()
+            case Empty() => None()
+            case Filled() => None()
+            case _ => userSol(x)(y)
+          }
         }
       } else {
-        userSol(x)(y) = userSol(x)(y) match {
-          case None() => Filled()
-          case Empty() => None()
-          case Filled() => None()
-          case _ => userSol(x)(y)
-        }
+        println("no clicks here")
       }
     }
   })
 
   rightMouse(onBtnDown = {m =>
     val (x,y) = screenToArray(m.x, m.y)
-    if (maybeStatus) {
-      userSol(x)(y) = userSol(x)(y) match {
-        case None() => MaybeEmpty()
-        case MaybeEmpty() => None()
-        case MaybeFilled() => None()
-        case _ => userSol(x)(y)
+
+    if ((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY)) {
+      if (maybeStatus) {
+        userSol(x)(y) = userSol(x)(y) match {
+          case None() => MaybeEmpty()
+          case MaybeEmpty() => None()
+          case MaybeFilled() => None()
+          case _ => userSol(x)(y)
+        }
+      } else {
+        userSol(x)(y) = userSol(x)(y) match {
+          case None() => Empty()
+          case Empty() => None()
+          case Filled() => None()
+          case _ => userSol(x)(y)
+        }
       }
     } else {
-      userSol(x)(y) = userSol(x)(y) match {
-        case None() => Empty()
-        case Empty() => None()
-        case Filled() => None()
-        case _ => userSol(x)(y)
-      }
+      println("no clicks here")
     }
   })
 
