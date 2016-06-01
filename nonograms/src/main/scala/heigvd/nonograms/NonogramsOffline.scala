@@ -21,15 +21,39 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
 
   backgroundColor = WHITE
 
-  val maybeButton = new Button(10, 400, 200, 70, "To Draft Mode")
-  val cancelButton = new Button(10, 330, 100, 70, "Cancel\nDraft")
-  val validateButton = new Button(110, 330, 100, 70, "Apply\nDraft")
-  var maybeStatus = false
+  val maybeButton : ToggleButton = new ToggleButton(10, 400, 200, 70,
+    METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode",
+    () => {
+      cancelButton.activate()
+      validateButton.activate()
+      maybeStatus = true
+      println("Switching to draft mode")
+    })
+  val cancelButton : ToggleButton = new ToggleButton(10, 330, 100, 70,
+    METRO_RED, WHITE, "Cancel\nDraft", "",
+    () => {
+      userGrid.removeAllMaybe()
+      maybeButton.activate()
+      validateButton.deactivate()
+      maybeStatus = false
+      println("Cancelled draft")
+    })
+  val validateButton : ToggleButton = new ToggleButton(110, 330, 100, 70,
+    METRO_GREEN, WHITE, "Apply\nDraft", "",
+    () => {
+      userGrid.validateAllMaybe()
+      maybeButton.activate()
+      cancelButton.deactivate()
+      maybeStatus = false
+      println("Validated draft")
+    })
+  cancelButton.deactivate()
+  validateButton.deactivate()
 
+  var maybeStatus = false
   var checkMode = true
 
-  //val g = (new Grid)
-  val g = new Grid(List(List(true, false), List(false, true)))
+  val g = (new Grid)
   g.printGrid()
   g.printHints()
 
@@ -54,17 +78,6 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   val originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
 
   render {
-    // buttons!
-    if (maybeStatus) {
-      maybeButton.color = GRAY
-      cancelButton.color = METRO_RED
-      validateButton.color = METRO_GREEN
-    } else {
-      maybeButton.color = METRO_BLUE
-      cancelButton.color = WHITE
-      validateButton.color = WHITE
-    }
-
     // horizontal grid lines
     val lenHorizontal = gridSpacing * sizeX
     val lenHints = gridSpacing * rowHintMax
@@ -128,60 +141,42 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   }
 
   leftMouse(onBtnDown = {m =>
-    if (maybeButton.checkCollision(m.x,m.y) && maybeButton.active) {
-      maybeButton.active = false
-      cancelButton.active = true
-      validateButton.active = true
-      maybeStatus = true
-      println("Switching to draft mode")
-    } else if (cancelButton.checkCollision(m.x,m.y) && cancelButton.active) {
-      userGrid.removeAllMaybe()
-      maybeButton.active = true
-      cancelButton.active = false
-      validateButton.active = false
-      maybeStatus = false
-      println("Cancelled draft")
-    } else if (validateButton.checkCollision(m.x,m.y) && validateButton.active) {
-      userGrid.validateAllMaybe()
-      maybeButton.active = true
-      cancelButton.active = false
-      validateButton.active = false
-      maybeStatus = false
-      println("Validated draft")
-    } else {
-      val (x,y) = screenToArray(m.x, m.y)
+    maybeButton.click(m)
+    cancelButton.click(m)
+    validateButton.click(m)
 
-      if ((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY)) {
-        if (maybeStatus) {
-          userSol(x)(y) = userSol(x)(y) match {
-            case None() => MaybeFilled()
-            case MaybeEmpty() => None()
-            case MaybeFilled() => None()
-            case _ => userSol(x)(y)
-          }
-        } else {
-          val valid = !checkMode || (checkMode && grid(x)(y))
-          println(valid)
-          userSol(x)(y) = userSol(x)(y) match {
-            case None() if (valid) => Filled()
-            case Empty() => None()
-            case Filled() => None()
-            case _ => userSol(x)(y)
-          }
+    val (x,y) = screenToArray(m.x, m.y)
 
-          if (checkMode) {
-            if (userGrid.checkGameFinishedAgainstSolution()) {
-              println("conglaturation sol")
-            }
-          } else {
-            if (userGrid.checkGameFinishedAgainstHints()) {
-              println("conglaturation hint")
-            }
-          }
+    if ((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY)) {
+      if (maybeStatus) {
+        userSol(x)(y) = userSol(x)(y) match {
+          case None() => MaybeFilled()
+          case MaybeEmpty() => None()
+          case MaybeFilled() => None()
+          case _ => userSol(x)(y)
         }
       } else {
-        println("no clicks here")
+        val valid = !checkMode || (checkMode && grid(x)(y))
+        println(valid)
+        userSol(x)(y) = userSol(x)(y) match {
+          case None() if (valid) => Filled()
+          case Empty() => None()
+          case Filled() => None()
+          case _ => userSol(x)(y)
+        }
+
+        if (checkMode) {
+          if (userGrid.checkGameFinishedAgainstSolution()) {
+            println("conglaturation sol")
+          }
+        } else {
+          if (userGrid.checkGameFinishedAgainstHints()) {
+            println("conglaturation hint")
+          }
+        }
       }
+    } else {
+      println("no clicks here")
     }
   })
 
