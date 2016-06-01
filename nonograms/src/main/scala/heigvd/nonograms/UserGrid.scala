@@ -1,5 +1,7 @@
 package heigvd.nonograms
 
+import scala.collection.JavaConverters._
+
 // Types of cells fot the current game played by a user.
 sealed trait CellType;
 // No current state (the default state for all cells)
@@ -60,6 +62,10 @@ class UserGrid(grid: Grid) {
     case _ => false
   }
 
+  def numberFilled (): Int = {
+    grid.numberFilled(userSolution.flatten.map(c => fromCellTypeToBoolean(c)).toList)
+  }
+
   /**
     * Check that the game is finished and valid against the solution (not against the hints).
     *
@@ -76,6 +82,7 @@ class UserGrid(grid: Grid) {
       userSolution(x)(y) match {
         case Empty() => if (againstSolution && grid.solution(x)(y)) return false
         case Filled() => if (againstSolution && !grid.solution(x)(y)) return false
+        case None() => if (againstSolution && grid.solution(x)(y)) return false
         case _ => return false
       }
     }
@@ -95,7 +102,7 @@ class UserGrid(grid: Grid) {
   def checkGameFinishedAgainstHints() : Boolean = {
     // first, must consist ONLY of filled/empty cells: checkGameFinishedAgainstSolution(false)
     // actually, we only care the number of filled cells in user solution is equal to the number of true cells in grid solution
-    if (grid.numberFilled() == grid.numberFilled(userSolution.flatten.map(c => fromCellTypeToBoolean(c)) toList)) {
+    if (grid.numberFilled() != numberFilled) {
       return false
     }
 
@@ -105,17 +112,17 @@ class UserGrid(grid: Grid) {
 
     // check columns
     for (x <- userSolution)
-      my_cols_hint :+= grid.generateHintsFromList((x map (c => fromCellTypeToBoolean(c))) toList)
+      my_cols_hint :+= grid.generateHintsFromList((x map (c => fromCellTypeToBoolean(c))).toList)
 
-    if (my_cols_hint.equals(grid.cols_hint)) {
+    if (!my_cols_hint.equals(grid.cols_hint)) {
       return false
     }
 
     // check rows
     for (yi <- 0 until grid.sizeY)
-      my_rows_hint :+= grid.generateHintsFromList(userSolution map (x => x(yi)) map(c => fromCellTypeToBoolean(c)) toList)
+      my_rows_hint :+= grid generateHintsFromList (userSolution map (x => x(yi)) map(c => fromCellTypeToBoolean(c))).toList
 
-    if (my_rows_hint.equals(grid.rows_hint)) {
+    if (!my_rows_hint.equals(grid.rows_hint)) {
       return false
     }
 
