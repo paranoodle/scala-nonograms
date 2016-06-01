@@ -15,6 +15,8 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
 
   backgroundColor = WHITE
 
+  var maybeStatus = false
+
   val g = (new Grid)
   g.printGrid()
   g.printHints()
@@ -101,7 +103,21 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   }
 
   leftMouse(onBtnDown = {m =>
-    println("CLICK CLICK!! " + m)
+    println("LEFT CLICK!! " + m)
+    val (x,y) = screenToArray(m:_*)
+    if (maybeStatus) {
+      userSol(x)(y) = userSol(x)(y) match {
+        case userGrid.None() => userGrid.MaybeFilled()
+        case userGrid.MaybeEmpty() => userGrid.None()
+        case userGrid.MaybeFilled() => userGrid.None()
+      }
+    } else {
+      userSol(x)(y) = userSol(x)(y) match {
+        case userGrid.None() => userGrid.Filled()
+        case userGrid.Empty() => userGrid.None()
+        case userGrid.Filled() => userGrid.None()
+      }
+    }
   })
 
   rightMouse(onBtnDown = {m =>
