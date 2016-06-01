@@ -5,6 +5,15 @@ import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
 object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
+  // start time
+  val clock = System.currentTimeMillis()
+  val cal = java.util.Calendar.getInstance()
+
+  // timer to trigger action every second
+  val timer = Timer(1000) {
+    println("everytime i'm shuffling")
+  }
+
   val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
   val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
   val METRO_BLUE = new ScageColor("Metro Blue", 0x00, 0xae, 0xdb)
@@ -134,6 +143,10 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     if (userGrid.numberPenalties() > 0) {
       print("CHEATING: " + userGrid.numberPenalties() + "!", originX + 0.0f, originY - 3 * fullSize + 0.0f, 24.0f, METRO_RED, "default")
     }
+
+    val clock_now = System.currentTimeMillis()
+    cal.setTimeInMillis(clock_now - clock)
+    print("Time : "+ Time.current(cal), Vec(originX, originY - 5 * fullSize))
   }
 
   leftMouse(onBtnDown = {m =>
@@ -212,5 +225,22 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       ((xs - originX - offset) / gridSpacing).floor.toInt,
       (sizeY - ((ys - originY + offset) / gridSpacing)).floor.toInt
       )
+  }
+}
+
+// Timer ideas from http://otfried.org/scala/timers.html
+object Time {
+  private val form = new java.text.SimpleDateFormat("mm:ss:SSS")
+  def current (time:java.util.Calendar = java.util.Calendar.getInstance()) = form.format(time.getTime)
+}
+
+object Timer {
+  def apply(interval: Int, repeats: Boolean = true)(op: => Unit) {
+    val timeOut = new javax.swing.AbstractAction() {
+      def actionPerformed(e : java.awt.event.ActionEvent) = op
+    }
+    val t = new javax.swing.Timer(interval, timeOut)
+    t.setRepeats(repeats)
+    t.start()
   }
 }
