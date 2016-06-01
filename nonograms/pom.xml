@@ -5,9 +5,9 @@
   <artifactId>nonograms</artifactId>
   <version>0.1</version>
 
-  <name>Scage Project</name>
-  <description>Simple Scage Project Stub</description>
-  <url>http://example.com</url>
+  <name>Nonograms</name>
+  <description>Simple Nonograms Project Stub</description>
+  <url>https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/jnlp</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -131,6 +131,7 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
+        <version>2.15.2</version>
         <executions>
           <execution>
             <goals>
@@ -152,8 +153,13 @@
       </plugin>
 
       <plugin>
+          <!-- WARNING: GOING RETIRED 2016-05-28 -->
+          <!-- http://maven.apache.org/plugins/maven-eclipse-plugin/index.html -->
+          <!-- ALTERNATIVE: M2E (MAVEN TO ECLIPSE) -->
+          <!-- https://projects.eclipse.org/projects/technology.m2e -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.10</version>
         <configuration>
           <downloadSources>true</downloadSources>
           <buildcommands>
@@ -255,7 +261,7 @@
                   <artifactId>jnlp-api</artifactId>
                   <version>5.0</version>
                   <scope>system</scope>
-                  <systemPath>/usr/bin/javaws</systemPath>
+                  <systemPath>${openjdkjavax}</systemPath>
               </dependency>
           </dependencies>
       </profile>
@@ -321,7 +327,7 @@
                         <!-- default values -->
                         <!--inputTemplateResourcePath>${project.basedir}</inputTemplateResourcePath-->
                         <!--inputTemplate>src/main/jnlp/template.vm</inputTemplate--> <!-- relative to inputTemplateResourcePath -->
-                        <outputFile>run.jnlp</outputFile> <!-- defaults to launch.jnlp -->
+                        <outputFile>launch.jnlp</outputFile> <!-- defaults to launch.jnlp -->
 
                         <!-- used to automatically identify the jar containing the main class. -->
                         <!-- this is perhaps going to change -->

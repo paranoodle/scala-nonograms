@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<messages>
+    <!-- default: Loading...-->
+    <message id="renderer.loading">
+        Loading, please wait a few seconds...
+    </message>
+
+    <!-- default: Exiting...-->
+    <message id="renderer.exiting">
+        Exiting... see you soon! :)
+    </message>
+
+    <!-- default: ""-->
+    <message id="app.welcome">
+        Welcome to Nonograms!
+    </message>
+
+
+    <message id="button.newgame">
+        New Game
+    </message>
+
+    <message id="button.settings">
+        Settings
+    </message>
+
+    <message id="launcher.info">
+        by Eléonore d'Agostino &amp; Valentin Minder
+    </message>
+</messages>
