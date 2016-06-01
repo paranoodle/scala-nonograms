@@ -16,13 +16,14 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   backgroundColor = WHITE
 
   var maybeStatus = false
+  val maybeToggle = new Button(100, 100, 100, 100, "TEST", BLUE)
 
   val g = (new Grid)
   g.printGrid()
   g.printHints()
 
   val userGrid = new UserGrid(g)
-  userGrid.generateRandomState() // RANDOM state to test!
+  //userGrid.generateRandomState() // RANDOM state to test!
   userGrid.printMyGrid()
   val userSol = userGrid.userSolution
 
@@ -92,7 +93,7 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
         case Filled() =>
           drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, DARK_GRAY)
         case None() =>
-        // does nothing
+          // does nothing
         case MaybeEmpty() =>
           print("?", Vec(posX, posY + 2), RED, align = "center")
         case MaybeFilled() =>
@@ -103,27 +104,30 @@ object NonogramsOffline extends ScageScreenApp("Nonograms", 640, 480) {
   }
 
   leftMouse(onBtnDown = {m =>
-    println("LEFT CLICK!! " + m)
-    val (x,y) = screenToArray(m.x, m.y)
-    if (maybeStatus) {
-      userSol(x)(y) = userSol(x)(y) match {
-        case None() => MaybeFilled()
-        case MaybeEmpty() => None()
-        case MaybeFilled() => None()
-        case _ => userSol(x)(y)
-      }
+    if (maybeToggle.checkCollision(m.x,m.y)) {
+      maybeStatus = !maybeStatus
+      println("Maybe Toggle!")
     } else {
-      userSol(x)(y) = userSol(x)(y) match {
-        case None() => Filled()
-        case Empty() => None()
-        case Filled() => None()
-        case _ => userSol(x)(y)
+      val (x,y) = screenToArray(m.x, m.y)
+      if (maybeStatus) {
+        userSol(x)(y) = userSol(x)(y) match {
+          case None() => MaybeFilled()
+          case MaybeEmpty() => None()
+          case MaybeFilled() => None()
+          case _ => userSol(x)(y)
+        }
+      } else {
+        userSol(x)(y) = userSol(x)(y) match {
+          case None() => Filled()
+          case Empty() => None()
+          case Filled() => None()
+          case _ => userSol(x)(y)
+        }
       }
     }
   })
 
   rightMouse(onBtnDown = {m =>
-    println("RIGHT CLICK!! " + m)
     val (x,y) = screenToArray(m.x, m.y)
     if (maybeStatus) {
       userSol(x)(y) = userSol(x)(y) match {
