@@ -23,7 +23,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   def userGrid: UserGrid = selectedGrid.getUserGrid()
 
   // start time
-  val clock = System.currentTimeMillis()
+  lazy val clock = System.currentTimeMillis()
   val cal = java.util.Calendar.getInstance()
 
   val baseRequest: HttpRequest = Http(
@@ -31,12 +31,8 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   val commitResult = false
 
   // timer to trigger action every second
-  val timer = Timer(1000) {
-    println("everytime i'm shuffling")
-
-    // "ping"
-    val response: HttpResponse[String] = Http("https://dunnololda.github.io").asString
-    println(response.body)
+  val timer = Timer(5000) {
+    println("heartbeat: sending data")
 
     // push the current result to server
     if (commitResult) {
@@ -118,6 +114,27 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   def originX = (windowWidth - (gridSpacing * (sizeX - rowHintMax))) / 2
   def originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
 
+
+  /* layout params for information about game status */
+  def Xprint_data = originX
+  def Xprint_text = originX + textOffset
+  def Yprint_text (i:Int) = originY - i * fullSize
+  val textOffset = gridSpacing * 5
+
+  /* penalties time calculation */
+  val penalty_time = 20000;
+  def penalties_time = userGrid.numberPenalties() * penalty_time;
+
+  /* Stores if the game is finished: is checked only on clicks */
+  var finished = false;
+
+  /* Return the elapsed time since the class was launched */
+  def elapsed:Long = System.currentTimeMillis() - clock
+  /* Return the time elapsed at the end of the game */
+  lazy val time_end:Long = elapsed
+  /* Return the cal as a formatted string. Update cal first. */
+  def time_string = Time.current(cal)
+
   render {
     // horizontal grid lines
     val lenHorizontal = gridSpacing * sizeX
@@ -179,88 +196,132 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       }
     }
 
-    // current state of game
-    print("Playing: " + userGrid.numberFilled + "/" + g.numberFilled(), Vec(originX, originY - fullSize), BLACK)
-    if (userGrid.numberPenalties() > 0) {
-      print("CHEATING: " + userGrid.numberPenalties() + "!", originX + 0.0f, originY - 3 * fullSize + 0.0f, 24.0f, METRO_RED, "default")
+    // information about current game status / evolution
+    var time_to_print = clock
+    if (finished) {
+      time_to_print = time_end
+      print("CONGRATS!", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
+    } else {
+      time_to_print = elapsed
+      print("...keep playing...", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
     }
 
-    cal.setTimeInMillis(elapsed)
-    print("Time : "+ Time.current(cal), Vec(originX, originY - 5 * fullSize))
-  }
+    // current state of game
+    val percent = userGrid.numberFilled * 100 / g.numberFilled()
+    val text = percent + "% (" + userGrid.numberFilled + "/" + g.numberFilled() + ")"
+    print(text, Vec(Xprint_text, Yprint_text(1)), BLACK)
 
-  def elapsed:Long = {
-    System.currentTimeMillis() - clock
+    // timers
+    cal.setTimeInMillis(time_to_print)
+    print(time_string, Vec(Xprint_text, Yprint_text(2)))
+
+    // show the penalties in red if any
+    if (userGrid.numberPenalties() > 0) {
+      cal.setTimeInMillis(penalties_time)
+      print(time_string, Vec(Xprint_text, Yprint_text(3)), METRO_RED, "default")
+      cal.setTimeInMillis(time_to_print + penalties_time)
+      print(time_string, Vec(Xprint_text, Yprint_text(4)), METRO_RED, "default")
+    } else {
+      // otherwise, just print 0 time for penalties
+      print(time_string, Vec(Xprint_text, Yprint_text(4)), BLACK, "default")
+      cal.setTimeInMillis(0)
+      print(time_string, Vec(Xprint_text, Yprint_text(3)), BLACK, "default")
+    }
+
+
   }
 
   interface {
     print(xml("launcher.info"), 10, 10, 10.0f, BLACK)
+
+    // information about current game status / evolution
+    print("Playing:", Vec(Xprint_data, Yprint_text(1)), BLACK)
+    print("Time:", Vec(Xprint_data, Yprint_text(2)), BLACK)
+    print("Penalties:", Vec(Xprint_data, Yprint_text(3)), BLACK)
+    drawLine(Vec(Xprint_data, Yprint_text(3) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 2), BLACK)
+    print("Total time:", Vec(Xprint_data, Yprint_text(4)), BLACK)
   }
 
+  /* Handles left-click events */
   leftMouse(onBtnDown = {m =>
     //maybeButton.click(m)
     //cancelButton.click(m)
     //validateButton.click(m)
 
-    val (x,y) = screenToArray(m.x, m.y)
+    // if the game is finished, has no effect
+    if (finished) {
+      println("no clicks: game is finished")
+    } else {
+      val (x, y) = screenToArray(m.x, m.y)
 
-    if ((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY)) {
-      if (maybeStatus) {
-        userSol(x)(y) = userSol(x)(y) match {
-          case None() => MaybeFilled()
-          case MaybeEmpty() => None()
-          case MaybeFilled() => None()
-          case _ => userSol(x)(y)
-        }
+      // checks that the click is within the array
+      if (!((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY))) {
+        println("no clicks here")
       } else {
-        val valid = !checkMode || (checkMode && grid(x)(y))
-        println(valid)
-        userSol(x)(y) = userSol(x)(y) match {
-          case None()  => if (valid) Filled() else Tried()
-          case Empty() => None()
-          case Filled() => None()
-          case _ => userSol(x)(y)
-        }
-
-        if (checkMode) {
-          if (userGrid.checkGameFinishedAgainstSolution()) {
-            println("conglaturation sol")
+        if (maybeStatus) {
+          userSol(x)(y) = userSol(x)(y) match {
+            case None() => MaybeFilled()
+            case MaybeEmpty() => None()
+            case MaybeFilled() => None()
+            case _ => userSol(x)(y)
           }
         } else {
-          if (userGrid.checkGameFinishedAgainstHints()) {
-            println("conglaturation hint")
+          val valid = !checkMode || (checkMode && grid(x)(y))
+          println(valid)
+          userSol(x)(y) = userSol(x)(y) match {
+            case None() => if (valid) Filled() else Tried()
+            case Empty() => None()
+            case Filled() => None()
+            case _ => userSol(x)(y)
+          }
+
+          if (checkMode) {
+            if (userGrid.checkGameFinishedAgainstSolution()) {
+              finished = true
+            }
+          } else {
+            if (userGrid.checkGameFinishedAgainstHints()) {
+              finished = true
+            }
+          }
+        }
+
+      }
+    }
+  })
+
+  /* Handles right-click events */
+  rightMouse(onBtnDown = { m =>
+    // if the game is finished, has no effect
+    if (finished) {
+      println("no clicks: game is finished")
+    } else {
+      val (x, y) = screenToArray(m.x, m.y)
+
+      // checks that the click is within the array
+      if (!((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY))) {
+        println("no clicks here")
+      } else {
+        if (maybeStatus) {
+          userSol(x)(y) = userSol(x)(y) match {
+            case None() => MaybeEmpty()
+            case MaybeEmpty() => None()
+            case MaybeFilled() => None()
+            case _ => userSol(x)(y)
+          }
+        } else {
+          userSol(x)(y) = userSol(x)(y) match {
+            case None() => Empty()
+            case Empty() => None()
+            case Filled() => None()
+            case _ => userSol(x)(y)
           }
         }
       }
-    } else {
-      println("no clicks here")
     }
   })
 
-  rightMouse(onBtnDown = {m =>
-    val (x,y) = screenToArray(m.x, m.y)
-
-    if ((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY)) {
-      if (maybeStatus) {
-        userSol(x)(y) = userSol(x)(y) match {
-          case None() => MaybeEmpty()
-          case MaybeEmpty() => None()
-          case MaybeFilled() => None()
-          case _ => userSol(x)(y)
-        }
-      } else {
-        userSol(x)(y) = userSol(x)(y) match {
-          case None() => Empty()
-          case Empty() => None()
-          case Filled() => None()
-          case _ => userSol(x)(y)
-        }
-      }
-    } else {
-      println("no clicks here")
-    }
-  })
-
+  /* Helper method to convert array position to screen positions */
   def arrayToScreen(x: Int, y: Int, offset: Int = 0): (Int, Int) = {
     (
       originX + offset + (x * (gridSpacing)),
@@ -268,6 +329,8 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       )
   }
 
+  /* Helper method to convert screen position to array positions.
+  Be careful, it may be OUTSIDE the array, and cause IndexOutOfBoundsException) */
   def screenToArray(xs: Double, ys: Double, offset: Int = 0): (Int, Int) = {
     (
       ((xs - originX - offset) / gridSpacing).floor.toInt,

@@ -22,10 +22,10 @@ Controllers
 	- remove all maybe’s DONE
 	- validate all maybe’s DONE
 	- game mode: checked / free IN PROGRESS E
-	- game finished IN PROGRESS 
-		- time starts at start game V
-		- additional time for penalties V
-		- time stops V
+	- game finished DONE
+		- time starts at start game DONE
+		- additional time for penalties DONE
+		- time stops DONE
 		- play again (+options: reset/return in evidence) V/E ?
 	- game visualisation in elastic search V
 		- user, time, %finished, finished, #penalties, time_score
