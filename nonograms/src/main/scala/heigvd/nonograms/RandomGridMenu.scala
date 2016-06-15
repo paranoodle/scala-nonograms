@@ -23,6 +23,6 @@ object RandomGridMenu extends Screen("Nonograms") with MultiController {
   })
 
   val back_button = new Button(windowWidth - 110, 400, 100, 70, "Back", NonogramsOffline.METRO_ORANGE, NonogramsOffline, () => {
-    RandomGridMenu.run()
+    NonogramsOffline.stop()
   })
 }
