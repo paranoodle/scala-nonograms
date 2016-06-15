@@ -32,11 +32,13 @@ class NonogramsAppTest extends TestCase("app") {
 
     val myg = new UserGrid(g)
     // start: must be empty
-    assertEquals(0, myg.numberFilled())
+    myg.checkGameFinished() // updates the cache
+    assertEquals(0, myg.numberFilledCache)
     myg.change(0, 0, Filled())
     myg.change(1, 1, Filled())
     // 2 filled
-    assertEquals(2, myg.numberFilled())
+    myg.checkGameFinished() // updates the cache
+    assertEquals(2, myg.numberFilledCache)
   }
 
   def testRandomGridSize() = {
@@ -92,6 +94,11 @@ class NonogramsAppTest extends TestCase("app") {
     assertEquals(false, g.solution(6)(2))
     assertEquals(true, g.solution(4)(0))
   }
+  // helper to check type
+  private def checkType(value: CellType, typ: CellType): Boolean = value match {
+    case `typ` => true
+    case _ => false
+  }
 
   def testUserGridUserSolution() = {
     val g = new Grid()
@@ -100,12 +107,6 @@ class NonogramsAppTest extends TestCase("app") {
     // test size
     assertEquals(g.sizeX, ug.userSolution.size)
     assertEquals(g.sizeY, ug.userSolution(0).size)
-
-    // helper to check type
-    def checkType(value: CellType, typ: CellType): Boolean = value match {
-      case `typ` => true
-      case _ => false
-    }
 
     // test all none at begining
     for (x <- ug.userSolution; y <- x) {
@@ -133,17 +134,36 @@ class NonogramsAppTest extends TestCase("app") {
     assertFalse(checkType(ug.userSolution(1)(0), None()))
     assertFalse(checkType(ug.userSolution(1)(1), None()))
 
-    // test maybe validation
-    ug.change(0, 0, MaybeEmpty())
-    ug.change(0, 1, MaybeFilled())
-    ug.validateAllMaybe()
-    assertTrue(checkType(ug.userSolution(0)(0), Empty()))
-    assertTrue(checkType(ug.userSolution(0)(1), Filled()))
-
     // reset the game
     ug.resetGame()
     assertTrue(checkType(ug.userSolution(1)(0), None()))
     assertTrue(checkType(ug.userSolution(1)(1), None()))
+  }
+
+  def testUserGridUserSolutionValidatesMaybe() = {
+    // grid from specified content
+    val s = List(
+      List(false, true),
+      List(true, false)
+    )
+    val g = new Grid(s)
+    val ug = new UserGrid(g)
+
+    // test maybe validation
+    ug.change(0, 0, MaybeEmpty())
+    ug.change(1, 0, MaybeEmpty())
+    ug.change(0, 1, MaybeFilled())
+    ug.change(1, 1, MaybeFilled())
+
+    ug.validateAllMaybe()
+
+    // MaybeEmpty => Empty always, whatever the real value
+    assertTrue(checkType(ug.userSolution(0)(0), Empty()))
+    assertTrue(checkType(ug.userSolution(1)(0), Empty()))
+
+    // MaybeFilled => Filled if real value true, => Tried if real value
+    assertTrue(checkType(ug.userSolution(0)(1), Filled()))
+    assertTrue(checkType(ug.userSolution(1)(1), Tried()))
   }
 
   def testUserGridCheckGameFinishedAgainstSolution() = {
@@ -157,27 +177,27 @@ class NonogramsAppTest extends TestCase("app") {
     val myGrid = new UserGrid(g)
 
     // empty grid: false
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
+    assertFalse(myGrid.checkGameFinished(true))
 
     myGrid.change(2, 0, Filled())
     // partially correct: false
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
+    assertFalse(myGrid.checkGameFinished(true))
 
     myGrid.change(1, 2, Filled())
     // filled correctly: true
-    assertTrue(myGrid.checkGameFinishedAgainstSolution())
+    assertTrue(myGrid.checkGameFinished(true))
 
     myGrid.change(2, 2, MaybeFilled())
     // filled correctly + maybe state: false
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
+    assertFalse(myGrid.checkGameFinished(true))
 
     myGrid.change(2, 2, Filled())
     // filled correctly + too many filled : false
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
+    assertFalse(myGrid.checkGameFinished(true))
 
     myGrid.change(1, 2, Filled())
     // filled partially + other filled : false
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
+    assertFalse(myGrid.checkGameFinished(true))
 
   }
 
@@ -191,33 +211,33 @@ class NonogramsAppTest extends TestCase("app") {
     val myGrid = new UserGrid(g)
 
     // empty solution is not correct
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
-    assertFalse(myGrid.checkGameFinishedAgainstHints())
+    assertFalse(myGrid.checkGameFinished(true))
+    assertFalse(myGrid.checkGameFinished(false))
 
     // correct against solution (and obviously against the hints, too)
     myGrid.change(0, 1, Filled())
     myGrid.change(1, 0, Filled())
-    assertTrue(myGrid.checkGameFinishedAgainstSolution())
-    assertTrue(myGrid.checkGameFinishedAgainstHints)
+    assertTrue(myGrid.checkGameFinished(true))
+    assertTrue(myGrid.checkGameFinished(false))
 
     // not correct against solution, but correct against hints
     myGrid.resetGame()
     myGrid.change(0, 0, Filled())
     myGrid.change(1, 1, Filled())
-    assertFalse(myGrid.checkGameFinishedAgainstSolution())
-    assertTrue(myGrid.checkGameFinishedAgainstHints)
+    assertFalse(myGrid.checkGameFinished(true))
+    assertTrue(myGrid.checkGameFinished(false))
 
     // not correct against hints (number correct, columns correct, rows incorrect)
     myGrid.resetGame()
     myGrid.change(0, 0, Filled())
     myGrid.change(0, 1, Filled())
-    assertFalse(myGrid.checkGameFinishedAgainstHints)
+    assertFalse(myGrid.checkGameFinished(false))
 
     // not correct against hints (number correct, columns incorrect, rows correct)
     myGrid.resetGame()
     myGrid.change(0, 0, Filled())
     myGrid.change(1, 0, Filled())
-    assertFalse(myGrid.checkGameFinishedAgainstHints)
+    assertFalse(myGrid.checkGameFinished(false))
   }
 
 }

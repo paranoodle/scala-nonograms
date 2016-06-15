@@ -22,8 +22,6 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   def g: Grid = selectedGrid.getGrid()
   def userGrid: UserGrid = selectedGrid.getUserGrid()
 
-  // start time
-  lazy val clock = System.currentTimeMillis()
   val cal = java.util.Calendar.getInstance()
 
   val baseRequest: HttpRequest = Http(
@@ -39,10 +37,10 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       val result = baseRequest.postData("{" +
         "\"user\":\""+ "username" + "\"," +
         "\"time\":\"" + "2016-05-31" + "\"," +
-        "\"elapsed\":\"" + elapsed + "\"," +
-        "\"score\":\"" + userGrid.numberFilled() + "\"," +
-        "\"finished\":\"" + userGrid.checkGameFinishedAgainstHints() + "\"," +
-        "\"penalty\":\"" + userGrid.numberPenalties() + "\"" +
+        "\"elapsed\":\"" + userGrid.time_elapsed + "\"," +
+        "\"score\":\"" + userGrid.numberFilledCache + "\"," +
+        "\"finished\":\"" + userGrid.isfinished + "\"," +
+        "\"penalty\":\"" + userGrid.numberPenaltiesCache + "\"" +
         "}").asString
 
       println(result.body)
@@ -88,7 +86,6 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   validateButton.deactivate()
 
   var maybeStatus = false
-  var checkMode = true
 
   // val g = (new Grid)
   // g.printGrid()
@@ -121,17 +118,6 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   def Yprint_text (i:Int) = originY - i * fullSize
   val textOffset = gridSpacing * 5
 
-  /* penalties time calculation */
-  val penalty_time = 20000;
-  def penalties_time = userGrid.numberPenalties() * penalty_time;
-
-  /* Stores if the game is finished: is checked only on clicks */
-  var finished = false;
-
-  /* Return the elapsed time since the class was launched */
-  def elapsed:Long = System.currentTimeMillis() - clock
-  /* Return the time elapsed at the end of the game */
-  lazy val time_end:Long = elapsed
   /* Return the cal as a formatted string. Update cal first. */
   def time_string = Time.current(cal)
 
@@ -197,18 +183,21 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     }
 
     // information about current game status / evolution
-    var time_to_print = clock
-    if (finished) {
-      time_to_print = time_end
+    var time_to_print = userGrid.time_start
+    if (userGrid.isfinished) {
+      time_to_print = userGrid.time_finished
       print("CONGRATS!", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
     } else {
-      time_to_print = elapsed
+      time_to_print = userGrid.time_elapsed
       print("...keep playing...", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
     }
 
     // current state of game
-    val percent = userGrid.numberFilled * 100 / g.numberFilled()
-    val text = percent + "% (" + userGrid.numberFilled + "/" + g.numberFilled() + ")"
+    var percent = 100
+    if (g.numberFilledCache != 0) {
+      percent = userGrid.numberFilledCache * 100 / g.numberFilledCache
+    }
+    val text = percent + "% (" + userGrid.numberFilledCache + "/" + g.numberFilledCache + ")"
     print(text, Vec(Xprint_text, Yprint_text(1)), BLACK)
 
     // timers
@@ -216,10 +205,10 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     print(time_string, Vec(Xprint_text, Yprint_text(2)))
 
     // show the penalties in red if any
-    if (userGrid.numberPenalties() > 0) {
-      cal.setTimeInMillis(penalties_time)
+    if (userGrid.numberPenaltiesCache > 0) {
+      cal.setTimeInMillis(userGrid.penaltiesTime)
       print(time_string, Vec(Xprint_text, Yprint_text(3)), METRO_RED, "default")
-      cal.setTimeInMillis(time_to_print + penalties_time)
+      cal.setTimeInMillis(time_to_print + userGrid.penaltiesTime)
       print(time_string, Vec(Xprint_text, Yprint_text(4)), METRO_RED, "default")
     } else {
       // otherwise, just print 0 time for penalties
@@ -249,7 +238,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     //validateButton.click(m)
 
     // if the game is finished, has no effect
-    if (finished) {
+    if (userGrid.isfinished) {
       println("no clicks: game is finished")
     } else {
       val (x, y) = screenToArray(m.x, m.y)
@@ -266,7 +255,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
             case _ => userSol(x)(y)
           }
         } else {
-          val valid = !checkMode || (checkMode && grid(x)(y))
+          val valid = !userGrid.checkMode || (userGrid.checkMode && grid(x)(y))
           println(valid)
           userSol(x)(y) = userSol(x)(y) match {
             case None() => if (valid) Filled() else Tried()
@@ -275,15 +264,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
             case _ => userSol(x)(y)
           }
 
-          if (checkMode) {
-            if (userGrid.checkGameFinishedAgainstSolution()) {
-              finished = true
-            }
-          } else {
-            if (userGrid.checkGameFinishedAgainstHints()) {
-              finished = true
-            }
-          }
+          userGrid.checkGameFinished(userGrid.checkMode)
         }
 
       }
@@ -293,7 +274,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   /* Handles right-click events */
   rightMouse(onBtnDown = { m =>
     // if the game is finished, has no effect
-    if (finished) {
+    if (userGrid.isfinished) {
       println("no clicks: game is finished")
     } else {
       val (x, y) = screenToArray(m.x, m.y)

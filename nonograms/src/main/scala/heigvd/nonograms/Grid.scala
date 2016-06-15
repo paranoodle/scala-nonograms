@@ -113,9 +113,12 @@ class Grid(any: Boolean) {
     x.foldLeft(new IntermState)((state, bool) => state.nextState(bool)).finish
   }
 
-  // count the number of filled (true) cells in a given solution
+  // cache of number of filled (true) cells in a given solution
+  var numberFilledCache = numberFilled()
+  // count the number of filled (true) cells in a given solution and updates the cache
   def numberFilled(sol: List[Boolean] = solution.flatten): Int = {
-    sol.foldLeft(0)((x, b) => if (b) x + 1 else x)
+    numberFilledCache = sol.foldLeft(0)((x, b) => if (b) x + 1 else x)
+    numberFilledCache
   }
 
   // print out the grid (the solution)

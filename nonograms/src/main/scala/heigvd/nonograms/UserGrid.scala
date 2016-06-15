@@ -22,12 +22,36 @@ case class Tried() extends CellType
   */
 class UserGrid(grid: Grid) {
 
+  var checkMode = true
+
+  /*
+    Stores if the game is finished.
+    WARNING: IT DOES NOT UPDATE AUTOMATICALLY WHEN CALLED, USE IT ONLY FOR RENDERING PURPOSES
+
+    Only speed-up the process, instead of calling either of these:
+    - checkGameFinishedAgainstSolution
+    - checkGameFinishedAgainstHints
+    But when calling these, isfinished updates.
+   */
+  var isfinished = false
+
+  // start time: set up and freeze when first called
+  lazy val time_start:Long = System.currentTimeMillis()
+
+  /* Return the elapsed time since the class was launched */
+  def time_elapsed:Long = System.currentTimeMillis() - time_start
+
+  // end time: set up and freeze when first called
+  lazy val time_finished:Long = System.currentTimeMillis() - time_start
+
   // the array of cell state of the current game
   var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
 
   // change the state of a single cell
   def change(x: Int, y: Int, state: CellType): Unit = {
     userSolution(x)(y) = state
+    // updates the cache
+    numberFilled()
   }
 
   // reset all "maybe" sign to None(), game is now to the last known stable state
@@ -53,31 +77,70 @@ class UserGrid(grid: Grid) {
         case _ => userSolution(x)(y)
       }
     }
+    // updates the cache
+    numberFilled()
   }
 
   // reset the game to the starting point (all None)
   def resetGame() = {
     userSolution = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
+
+    // updates the cached values
+    // TODO: how to reset time
+    // TODO: check behavior if game was already finished.
+    isfinished = false
+    checkGameFinishedAgainstHints()
+    numberFilled()
+    numberPenalties()
   }
 
   // Util method to transpose a CellType to Boolean (default: false)
-  def fromCellTypeToBoolean(c:CellType): Boolean = c match {
+  private def fromCellTypeToBoolean(c:CellType): Boolean = c match {
     case Empty() => false
     case Filled() => true
     case _ => false
   }
 
-  // count the number of filled cells
-  def numberFilled (): Int = {
-    grid.numberFilled(userSolution.flatten.map(c => fromCellTypeToBoolean(c)).toList)
+  // return the cached value of number of filled cells
+  var numberFilledCache = numberFilled()
+  // count the number of filled cells and updates the cache
+  private def numberFilled (): Int = {
+    numberFilledCache =grid.numberFilled(userSolution.flatten.map(c => fromCellTypeToBoolean(c)).toList)
+    numberFilledCache
   }
 
-  // count the penalties
-  def numberPenalties (): Int = {
-    grid.numberFilled(userSolution.flatten.map(c => c match {
+  // return the cached value of penalties
+  var numberPenaltiesCache = numberPenalties()
+  // count the penalties and updates the cache
+  private def numberPenalties (): Int = {
+    numberPenaltiesCache = grid.numberFilled(userSolution.flatten.map(c => c match {
       case Tried() => true
       case _ => false
     }).toList)
+    numberPenaltiesCache
+  }
+
+  /* penalty time be error */
+  private val penalty_time = 20000;
+  /* penalties time calculation */
+  def penaltiesTime = numberPenaltiesCache * penalty_time;
+
+
+  /**
+  * Check that the game is finished and valid, by default or false against the hints, if true either against the solution.
+  *
+  * */
+  def checkGameFinished(checkMode : Boolean = false) = {
+    // updates the caches
+    numberPenalties()
+    numberFilled()
+
+    // check the finished status and updates the cache
+    isfinished = checkMode match {
+      case true => checkGameFinishedAgainstSolution()
+      case false => checkGameFinishedAgainstHints()
+    }
+    isfinished
   }
 
   /**
@@ -91,7 +154,7 @@ class UserGrid(grid: Grid) {
     *
     * @return Return true if game is completed and valid, false otherwise.
      */
-  def checkGameFinishedAgainstSolution(againstSolution:Boolean = true): Boolean = {
+  private def checkGameFinishedAgainstSolution(againstSolution:Boolean = true): Boolean = {
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) match {
         case Empty()|None()|Tried() => if (againstSolution && grid.solution(x)(y)) return false
@@ -112,7 +175,7 @@ class UserGrid(grid: Grid) {
     *
     * @return Return true if game is completed and valid, false otherwise.
     */
-  def checkGameFinishedAgainstHints() : Boolean = {
+  private def checkGameFinishedAgainstHints() : Boolean = {
     // first, must consist ONLY of filled/empty cells: checkGameFinishedAgainstSolution(false)
     // actually, we only care the number of filled cells in user solution is equal to the number of true cells in grid solution
     if (grid.numberFilled() != numberFilled) {
