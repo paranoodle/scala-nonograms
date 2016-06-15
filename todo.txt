@@ -4,7 +4,7 @@ Views
 	- playing (user grid)
 	- solution view (user grid & solution)
 - Menu view(s)
-	- enter username (DONE - need to store somewhere)
+	- enter username (DONE)
 	- choose Size (grid random) (DONE)
 	- choose predefine grid (picross = picture crossword) E
 
@@ -18,7 +18,7 @@ Controllers
 -----------
 - Game
 	- set state : None, Empty, Filled, Maybe E/F DONE
-	- reset game / return to menu (return DONE)
+	- reset game / return to menu (DONE)
 	- remove all maybe’s DONE
 	- validate all maybe’s DONE
 	- game mode: checked / free IN PROGRESS E

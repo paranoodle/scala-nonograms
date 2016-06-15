@@ -7,19 +7,18 @@ object LauncherMainMenu extends ScreenApp("Nonograms Scala Scage Game", 640, 480
 
   val x = (windowWidth - 200) / 2
 
-  val random_grid_button = new Button(x, 324, 200, 70, "Random Grids", NonogramsOffline.METRO_BLUE, LauncherMainMenu, () => {
+  val random_grid_button = new Button(x, 324, 200, 70, "Random Grids", Colors.METRO_BLUE, LauncherMainMenu, () => {
     RandomGridMenu.run()
   })
 
-  val premade_grid_button = new Button(x, 224, 200, 70, "Premade Grids", NonogramsOffline.METRO_BLUE, LauncherMainMenu, () => {
+  val premade_grid_button = new Button(x, 224, 200, 70, "Premade Grids", Colors.METRO_BLUE, LauncherMainMenu, () => {
     PremadeGridMenu.run()
   })
 
   var name_input = false
-  var name = ""
-  val name_button: Button = new Button(x, 124, 200, 70, "Enter Username", NonogramsOffline.METRO_ORANGE, LauncherMainMenu, () => {
+  val name_button: Button = new Button(x, 124, 200, 70, "Enter Username", Colors.METRO_ORANGE, LauncherMainMenu, () => {
     name_button.text = ""
-    name = ""
+    User.current = ""
     name_input = true
   })
 
@@ -49,7 +48,7 @@ object LauncherMainMenu extends ScreenApp("Nonograms Scala Scage Game", 640, 480
   key(KEY_RETURN, onKeyDown = {
     if (name_input) {
       name_input = false
-      name = name_button.text
+      User.current = name_button.text
       name_button.text = "Change Username"
     }
   })
@@ -59,8 +58,8 @@ object LauncherMainMenu extends ScreenApp("Nonograms Scala Scage Game", 640, 480
   }
 
   render {
-    if (name != "") {
-      print("You are currently playing as " + name, Vec(10, 450), BLACK)
+    if (User.current != "") {
+      print("You are currently playing as " + User.current, Vec(10, 450), BLACK)
     }
   }
 }

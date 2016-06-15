@@ -17,6 +17,18 @@ object selectedGrid {
   def getUserGrid() = userGrid
 }
 
+object User {
+  var current: String = ""
+}
+
+object Colors {
+  val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
+  val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
+  val METRO_BLUE = new ScageColor("Metro Blue", 0x00, 0xae, 0xdb)
+  val METRO_ORANGE = new ScageColor("Metro Orange", 0xf3, 0x77, 0x35)
+  val METRO_YELLOW = new ScageColor("Metro Yellow", 0xff, 0xc4, 0x25)
+}
+
 object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   def g: Grid = selectedGrid.getGrid()
@@ -37,7 +49,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     // push the current result to server
     if (commitResult) {
       val result = baseRequest.postData("{" +
-        "\"user\":\""+ "username" + "\"," +
+        "\"user\":\""+ User.current + "\"," +
         "\"time\":\"" + "2016-05-31" + "\"," +
         "\"elapsed\":\"" + elapsed + "\"," +
         "\"score\":\"" + userGrid.numberFilled() + "\"," +
@@ -50,20 +62,18 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   }
 
-  val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
-  val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
-  val METRO_BLUE = new ScageColor("Metro Blue", 0x00, 0xae, 0xdb)
-  val METRO_ORANGE = new ScageColor("Metro Orange", 0xf3, 0x77, 0x35)
-  val METRO_YELLOW = new ScageColor("Metro Yellow", 0xff, 0xc4, 0x25)
-
   backgroundColor = WHITE
 
-  val back_button = new Button(windowWidth - 110, 400, 100, 70, "Back", NonogramsOffline.METRO_ORANGE, NonogramsOffline, () => {
+  val back_button = new Button(windowWidth - 110, 400, 100, 70, "Back", Colors.METRO_ORANGE, NonogramsOffline, () => {
     stop()
   })
 
+  val reset_button = new Button(windowWidth - 110, 320, 100, 70, "Reset", Colors.METRO_RED, NonogramsOffline, () => {
+    userGrid.resetGame()
+  })
+
   val maybeButton : ToggleButton = new ToggleButton(10, 400, 200, 70,
-    METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode", NonogramsOffline,
+    Colors.METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode", NonogramsOffline,
     () => {
       cancelButton.activate()
       validateButton.activate()
@@ -71,7 +81,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       println("Switching to draft mode")
     })
   val cancelButton : ToggleButton = new ToggleButton(10, 320, 95, 70,
-    METRO_RED, WHITE, "Cancel\nDraft", "", NonogramsOffline,
+    Colors.METRO_RED, WHITE, "Cancel\nDraft", "", NonogramsOffline,
     () => {
       userGrid.removeAllMaybe()
       maybeButton.activate()
@@ -80,7 +90,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       println("Cancelled draft")
     })
   val validateButton : ToggleButton = new ToggleButton(115, 320, 95, 70,
-    METRO_GREEN, WHITE, "Apply\nDraft", "", NonogramsOffline,
+    Colors.METRO_GREEN, WHITE, "Apply\nDraft", "", NonogramsOffline,
     () => {
       userGrid.validateAllMaybe()
       maybeButton.activate()
@@ -145,7 +155,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     val lenHints = gridSpacing * rowHintMax
     for (y <- 0 to sizeY) {
       val (_, pos) = arrayToScreen(0, y)
-      val color = if (y == 0 || y == sizeY) BLACK else if (y%5 == 0) METRO_ORANGE else GRAY
+      val color = if (y == 0 || y == sizeY) BLACK else if (y%5 == 0) Colors.METRO_ORANGE else GRAY
       drawLine(Vec(originX - lenHints, pos), Vec(originX + lenHorizontal, pos), color)
     }
 
@@ -153,7 +163,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     val lenVertical = gridSpacing * (sizeY + colHintMax)
     for (x <- 0 to sizeX) {
       val (pos, _) = arrayToScreen((sizeX - x), 0)
-      val color = if (x == 0 || x == sizeX) BLACK else if (x%5 == 0) METRO_ORANGE else GRAY
+      val color = if (x == 0 || x == sizeX) BLACK else if (x%5 == 0) Colors.METRO_ORANGE else GRAY
       drawLine(Vec(pos, originY), Vec(pos, originY + lenVertical), color)
     }
 
@@ -191,12 +201,12 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
         case None() =>
           // does nothing
         case MaybeEmpty() =>
-          print("?", Vec(posX, posY + 2), METRO_BLUE, align = "center")
+          print("?", Vec(posX, posY + 2), Colors.METRO_BLUE, align = "center")
         case MaybeFilled() =>
-          drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, METRO_BLUE)
+          drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, Colors.METRO_BLUE)
           print("?", Vec(posX, posY + 2), WHITE, align = "center")
         case Tried() =>
-          print("X", Vec(posX, posY + 2), METRO_RED, align = "center")
+          print("X", Vec(posX, posY + 2), Colors.METRO_RED, align = "center")
       }
     }
 
@@ -222,9 +232,9 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     // show the penalties in red if any
     if (userGrid.numberPenalties() > 0) {
       cal.setTimeInMillis(penalties_time)
-      print(time_string, Vec(Xprint_text, Yprint_text(3)), METRO_RED, "default")
+      print(time_string, Vec(Xprint_text, Yprint_text(3)), Colors.METRO_RED, "default")
       cal.setTimeInMillis(time_to_print + penalties_time)
-      print(time_string, Vec(Xprint_text, Yprint_text(4)), METRO_RED, "default")
+      print(time_string, Vec(Xprint_text, Yprint_text(4)), Colors.METRO_RED, "default")
     } else {
       // otherwise, just print 0 time for penalties
       print(time_string, Vec(Xprint_text, Yprint_text(4)), BLACK, "default")
