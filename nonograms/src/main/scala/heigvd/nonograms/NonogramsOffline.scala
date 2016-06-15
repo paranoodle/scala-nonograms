@@ -31,7 +31,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   val commitResult = false
 
   // timer to trigger action every second
-  /*val timer = Timer(1000) {
+  val timer = Timer(1000) {
     println("everytime i'm shuffling")
 
     // "ping"
@@ -52,7 +52,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       println(result.body)
     }
 
-  }*/
+  }
 
   val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
   val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
