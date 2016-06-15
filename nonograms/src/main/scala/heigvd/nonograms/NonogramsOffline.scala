@@ -1,5 +1,7 @@
 package heigvd.nonograms
 
+import java.util.Date
+
 import com.github.dunnololda.scage.ScageLib._
 import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
@@ -18,7 +20,17 @@ object selectedGrid {
 }
 
 object User {
+  private val default = "user" + scala.util.Random.nextInt(Integer.MAX_VALUE)
   var current: String = ""
+
+  /** Get the user name or the default one is undefined */
+  def getUser = {
+    if (current.equals("")) {
+      default
+    } else {
+      current
+    }
+  }
 }
 
 object Colors {
@@ -35,23 +47,42 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   val cal = java.util.Calendar.getInstance()
 
-  val baseRequest: HttpRequest = Http(
-    "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonograms/stats")
+  // heartbeat towards elastic server.
+  val uri = "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonogramsv01/stats/"
+  // trigger to commit or not
   val commitResult = false
+  // generate random indices
+  def idx = scala.util.Random.nextInt(Integer.MAX_VALUE)
 
   // timer to trigger action every second
   val timer = Timer(5000) {
-    println("heartbeat: sending data")
+    val i = idx
+    println("heartbeat: sending data with ID #" + i)
 
     // push the current result to server
     if (commitResult) {
-      val result = baseRequest.postData("{" +
-        "\"user\":\""+ User.current + "\"," +
-        "\"time\":\"" + "2016-05-31" + "\"," +
-        "\"elapsed\":\"" + userGrid.time_elapsed + "\"," +
-        "\"score\":\"" + userGrid.numberFilledCache + "\"," +
-        "\"finished\":\"" + userGrid.isfinished + "\"," +
-        "\"penalty\":\"" + userGrid.numberPenaltiesCache + "\"" +
+      cal.setTimeInMillis(time_reference_to_use)
+      val elapsed = time_string
+      cal.setTimeInMillis(time_reference_to_use + userGrid.penaltiesTime)
+      val penalty = time_string
+      cal.setTimeInMillis(time_reference_to_use + userGrid.penaltiesTime)
+      val total_time = time_string
+      val result = Http(uri + i).postData("{" +
+        "\"user\":\""+ User.getUser + "\"," + // string
+        "\"version\":\"" + "0.1" + "\"," + // string
+        "\"grid_id\":" + g.gridid + "\"," + // int
+        "\"time\":\"" + System.currentTimeMillis() + "\"," + // int
+        "\"time_elapsed\":\"" + elapsed + "\"," + // formatted date mm:ss:SSS
+        "\"time_elapsed_raw\":" + time_reference_to_use + "," + // int
+        "\"time_penalty\":\"" + penalty + "\"," + // formatted date mm:ss:SSS
+        "\"time_penalty_raw\":" + userGrid.penaltiesTime + "," + // int
+        "\"penalty_count\":" + userGrid.numberPenaltiesCache + ", " +
+        "\"time_total\":\"" + total_time + "\"," + // formatted date mm:ss:SSS
+        "\"time_total_raw\":" + (time_reference_to_use + userGrid.penaltiesTime) + "," + // int
+        "\"filled_value\":" + userGrid.numberFilledCache + "," +
+        "\"filled_percent\":" + filled_percent + "," + // int
+        "\"finished\":" + userGrid.isfinished + "," + // bool
+        "\"production\":" + false + "" + // bool
         "}").asString
 
       println(result.body)
@@ -194,9 +225,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     }
 
     // information about current game status / evolution
-    var time_to_print = userGrid.time_start
     if (userGrid.isfinished) {
-      time_to_print = userGrid.time_finished
       print("CONGRATS!", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
 
       if (g.random) {
@@ -207,27 +236,22 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
         })
       }
     } else {
-      time_to_print = userGrid.time_elapsed
       print("...keep playing...", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
     }
 
     // current state of game
-    var percent = 100
-    if (g.numberFilledCache != 0) {
-      percent = userGrid.numberFilledCache * 100 / g.numberFilledCache
-    }
-    val text = percent + "% (" + userGrid.numberFilledCache + "/" + g.numberFilledCache + ")"
+    val text = filled_percent + "% (" + userGrid.numberFilledCache + "/" + g.numberFilledCache + ")"
     print(text, Vec(Xprint_text, Yprint_text(1)), BLACK)
 
     // timers
-    cal.setTimeInMillis(time_to_print)
+    cal.setTimeInMillis(time_reference_to_use)
     print(time_string, Vec(Xprint_text, Yprint_text(2)))
 
     // show the penalties in red if any
     if (userGrid.numberPenaltiesCache > 0) {
       cal.setTimeInMillis(userGrid.penaltiesTime)
       print(time_string, Vec(Xprint_text, Yprint_text(3)), Colors.METRO_RED, "default")
-      cal.setTimeInMillis(time_to_print + userGrid.penaltiesTime)
+      cal.setTimeInMillis(time_reference_to_use + userGrid.penaltiesTime)
       print(time_string, Vec(Xprint_text, Yprint_text(4)), Colors.METRO_RED, "default")
     } else {
       // otherwise, just print 0 time for penalties
@@ -239,6 +263,22 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   }
 
+  def filled_percent = {
+    if (g.numberFilledCache != 0) {
+      userGrid.numberFilledCache * 100 / g.numberFilledCache
+    } else {
+      -1
+    }
+  }
+
+  def time_reference_to_use = {
+    if (userGrid.isfinished) {
+      userGrid.time_finished
+    } else {
+      userGrid.time_elapsed
+    }
+  }
+
   interface {
     print(xml("launcher.info"), 10, 10, 10.0f, BLACK)
 
@@ -248,6 +288,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     print("Penalties:", Vec(Xprint_data, Yprint_text(3)), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(3) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 2), BLACK)
     print("Total time:", Vec(Xprint_data, Yprint_text(4)), BLACK)
+    val useless = g.numberFilled()
   }
 
   /* Handles left-click events */

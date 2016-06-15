@@ -11,7 +11,7 @@ object PremadeGridMenu extends Screen("Nonograms") with MultiController {
     selectedGrid.setGrid(new Grid(List(
       "0000000011", "0000000111", "1000100110", "1111100111", "1010100011",
       "1111111111", "1101111111", "0111111111", "0111000101", "0101000101"
-      ), true))
+    ), 1))
     NonogramsOffline.run()
   })
 

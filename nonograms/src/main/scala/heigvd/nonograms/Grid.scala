@@ -9,6 +9,9 @@ package heigvd.nonograms
 
 class Grid(any: Boolean) {
 
+  // new grid have a random id, unless otherwise specified
+  var gridid = scala.util.Random.nextInt(Integer.MAX_VALUE);
+
   type Number = Int
   type Bool = Boolean
   type Hints = List[List[Number]]
@@ -32,8 +35,10 @@ class Grid(any: Boolean) {
   }
 
   // creates a grid from a list of strings (human-readable)
-  def this(s: List[String], readable: Boolean) = {
+  def this(s: List[String], id: Int) = {
     this(true)
+
+    gridid = id
 
     var sol: List[List[Boolean]] = List()
     for (x <- 0 until s(0).size) {
@@ -123,6 +128,8 @@ class Grid(any: Boolean) {
     // rows
     for (yi <- 0 until sizeY)
       rows_hint :+= generateHintsFromList(solution.map(x => x(yi)))
+
+    numberFilled()
   }
 
   // take a list of Boolean and return the corresponding hints as a list of Number

@@ -26,9 +26,9 @@ Controllers
 		- time starts at start game DONE
 		- additional time for penalties DONE
 		- time stops DONE
-		- play again (+options: reset/return in evidence) V/E ?
-	- game visualisation in elastic search V
-		- user, time, %finished, finished, #penalties, time_score
+		- play again (+options: reset/return in evidence) DONE/ OK?
+	- game visualisation in elastic search ALMOST OK
+		- user, time, %finished, finished, #penalties, time_score DONE
 
 Content
 -------
@@ -37,4 +37,4 @@ Content
 
 Known Bugs
 ==========
-- pressing "new grid" after finishing a grid, then pressing "back" is buggy (to check)
+- pressing "new grid" after finishing a grid, then pressing "back" is buggy
