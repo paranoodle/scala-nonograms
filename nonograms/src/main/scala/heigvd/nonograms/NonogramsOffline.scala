@@ -5,7 +5,22 @@ import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
 import scalaj.http._
 
+object selectedGrid {
+  var grid: Grid = new Grid()
+  var userGrid: UserGrid = new UserGrid(grid)
+
+  def setGrid(g: Grid) = {
+    grid = g
+    userGrid = new UserGrid(grid)
+  }
+  def getGrid() = grid
+  def getUserGrid() = userGrid
+}
+
 object NonogramsOffline extends Screen("Nonograms") with MultiController {
+
+  def g: Grid = selectedGrid.getGrid()
+  def userGrid: UserGrid = selectedGrid.getUserGrid()
 
   // start time
   val clock = System.currentTimeMillis()
@@ -16,7 +31,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   val commitResult = false
 
   // timer to trigger action every second
-  val timer = Timer(1000) {
+  /*val timer = Timer(1000) {
     println("everytime i'm shuffling")
 
     // "ping"
@@ -37,7 +52,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       println(result.body)
     }
 
-  }
+  }*/
 
   val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
   val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
@@ -48,7 +63,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   backgroundColor = WHITE
 
   val maybeButton : ToggleButton = new ToggleButton(10, 400, 200, 70,
-    METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode",
+    METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode", NonogramsOffline,
     () => {
       cancelButton.activate()
       validateButton.activate()
@@ -56,7 +71,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       println("Switching to draft mode")
     })
   val cancelButton : ToggleButton = new ToggleButton(10, 330, 100, 70,
-    METRO_RED, WHITE, "Cancel\nDraft", "",
+    METRO_RED, WHITE, "Cancel\nDraft", "", NonogramsOffline,
     () => {
       userGrid.removeAllMaybe()
       maybeButton.activate()
@@ -65,7 +80,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       println("Cancelled draft")
     })
   val validateButton : ToggleButton = new ToggleButton(110, 330, 100, 70,
-    METRO_GREEN, WHITE, "Apply\nDraft", "",
+    METRO_GREEN, WHITE, "Apply\nDraft", "", NonogramsOffline,
     () => {
       userGrid.validateAllMaybe()
       maybeButton.activate()
@@ -79,28 +94,29 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   var maybeStatus = false
   var checkMode = true
 
-  val g = (new Grid)
-  g.printGrid()
-  g.printHints()
+  // val g = (new Grid)
+  // g.printGrid()
+  // g.printHints()
 
-  val userGrid = new UserGrid(g)
+  // val userGrid = new UserGrid(g)
   userGrid.printMyGrid()
-  val userSol = userGrid.userSolution
+  def userSol = userGrid.userSolution
 
-  val grid = g.solution
-  val sizeX = g.sizeX
-  val sizeY = g.sizeY
-  val rowHintMax = g.rows_hint.map(_.size).max
-  val colHintMax = g.cols_hint.map(_.size).max
+  def grid = g.solution
+  def sizeX = g.sizeX
+  def sizeY = g.sizeY
+  def rowHintMax = g.rows_hint.map(_.size).max
+  def colHintMax = g.cols_hint.map(_.size).max
 
   val gridSpacing = 21
   val gridOffset = 10
   val fullSize = 18
+
   // The origin X is at the left of the grid (row hints to the left, grid to the right)
   // The origin Y is at the bottom of the grid (grid and col hints are above)
   // Both are designed to center [grid+hints] in the middle of the window.
-  val originX = (windowWidth - (gridSpacing * (sizeX - rowHintMax))) / 2
-  val originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
+  def originX = (windowWidth - (gridSpacing * (sizeX - rowHintMax))) / 2
+  def originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
 
   render {
     // horizontal grid lines
@@ -182,9 +198,9 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   }
 
   leftMouse(onBtnDown = {m =>
-    maybeButton.click(m)
-    cancelButton.click(m)
-    validateButton.click(m)
+    //maybeButton.click(m)
+    //cancelButton.click(m)
+    //validateButton.click(m)
 
     val (x,y) = screenToArray(m.x, m.y)
 
