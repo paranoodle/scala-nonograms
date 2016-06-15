@@ -30,7 +30,6 @@ object Colors {
 }
 
 object NonogramsOffline extends Screen("Nonograms") with MultiController {
-
   def g: Grid = selectedGrid.getGrid()
   def userGrid: UserGrid = selectedGrid.getUserGrid()
 
@@ -60,17 +59,12 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   }
 
+  val button_field_width = 220
+
   backgroundColor = WHITE
 
-  val back_button = new Button(windowWidth - 110, 400, 100, 70, "Back", Colors.METRO_ORANGE, NonogramsOffline, () => {
-    stop()
-  })
-
-  val reset_button = new Button(windowWidth - 110, 320, 100, 70, "Reset", Colors.METRO_RED, NonogramsOffline, () => {
-    userGrid.resetGame()
-  })
-
-  val maybeButton : ToggleButton = new ToggleButton(10, 400, 200, 70,
+  var maybeStatus = false
+  val maybeButton : ToggleButton = new ToggleButton(10, windowHeight - 80, 200, 70,
     Colors.METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode", NonogramsOffline,
     () => {
       cancelButton.activate()
@@ -78,7 +72,8 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       maybeStatus = true
       println("Switching to draft mode")
     })
-  val cancelButton : ToggleButton = new ToggleButton(10, 320, 95, 70,
+
+  val cancelButton : ToggleButton = new ToggleButton(10, windowHeight - 160, 95, 70,
     Colors.METRO_RED, WHITE, "Cancel\nDraft", "", NonogramsOffline,
     () => {
       userGrid.removeAllMaybe()
@@ -87,7 +82,9 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       maybeStatus = false
       println("Cancelled draft")
     })
-  val validateButton : ToggleButton = new ToggleButton(115, 320, 95, 70,
+  cancelButton.deactivate()
+
+  val validateButton : ToggleButton = new ToggleButton(115, windowHeight - 160, 95, 70,
     Colors.METRO_GREEN, WHITE, "Apply\nDraft", "", NonogramsOffline,
     () => {
       userGrid.validateAllMaybe()
@@ -96,16 +93,16 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       maybeStatus = false
       println("Validated draft")
     })
-  cancelButton.deactivate()
   validateButton.deactivate()
 
-  var maybeStatus = false
+  val back_button = new Button(10, 50, 100, 70, "Back", Colors.METRO_ORANGE, NonogramsOffline, () => {
+    stop()
+  })
 
-  // val g = (new Grid)
-  // g.printGrid()
-  // g.printHints()
-
-  // val userGrid = new UserGrid(g)
+  val reset_button = new Button(10, 130, 100, 70, "Reset", Colors.METRO_RED, NonogramsOffline, () => {
+    userGrid.resetGame()
+  })
+  
   userGrid.printMyGrid()
   def userSol = userGrid.userSolution
 
@@ -201,6 +198,14 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     if (userGrid.isfinished) {
       time_to_print = userGrid.time_finished
       print("CONGRATS!", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
+
+      if (g.random) {
+        val new_button = new Button(10, 210, 200, 70, "New Grid", Colors.METRO_GREEN, NonogramsOffline, () => {
+          stop()
+          selectedGrid.setGrid(new Grid(sizeX, sizeY))
+          NonogramsOffline.run()
+        })
+      }
     } else {
       time_to_print = userGrid.time_elapsed
       print("...keep playing...", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")

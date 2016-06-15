@@ -16,6 +16,7 @@ class Grid(any: Boolean) {
   var rows_hint: Hints = List()
   var cols_hint: Hints = List()
   var solution: Solution = List()
+  var random: Boolean = false
 
   def sizeX = solution.size
 
@@ -68,6 +69,7 @@ class Grid(any: Boolean) {
 
   // generates a rectangular random grid of specified size
   private def generateRandom(sizeX: Int, sizeY: Int) = {
+    random = true
     val r = scala.util.Random
     for (x <- 0 until sizeX) {
       var col: List[Bool] = List()
