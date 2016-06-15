@@ -58,6 +58,10 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   backgroundColor = WHITE
 
+  val back_button = new Button(windowWidth - 110, 400, 100, 70, "Back", NonogramsOffline.METRO_ORANGE, NonogramsOffline, () => {
+    stop()
+  })
+
   val maybeButton : ToggleButton = new ToggleButton(10, 400, 200, 70,
     METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode", NonogramsOffline,
     () => {
@@ -66,7 +70,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       maybeStatus = true
       println("Switching to draft mode")
     })
-  val cancelButton : ToggleButton = new ToggleButton(10, 330, 100, 70,
+  val cancelButton : ToggleButton = new ToggleButton(10, 320, 95, 70,
     METRO_RED, WHITE, "Cancel\nDraft", "", NonogramsOffline,
     () => {
       userGrid.removeAllMaybe()
@@ -75,7 +79,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       maybeStatus = false
       println("Cancelled draft")
     })
-  val validateButton : ToggleButton = new ToggleButton(110, 330, 100, 70,
+  val validateButton : ToggleButton = new ToggleButton(115, 320, 95, 70,
     METRO_GREEN, WHITE, "Apply\nDraft", "", NonogramsOffline,
     () => {
       userGrid.validateAllMaybe()
