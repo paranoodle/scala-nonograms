@@ -4,28 +4,32 @@ Views
 	- playing (user grid)
 	- solution view (user grid & solution)
 - Menu view(s)
-	- choose Size
-	- choose grid random / predefine grid
-	- from saved grid ?
+	- enter username E
+	- choose Size (grid random) E
+	- choose predefine grid (picross = picture crossword) E
 
 Models
 ------
 - Grid - DONE & TESTED
 - User Grid - DONE & TESTED
 	- check user solution against hints & solution DONE & TESTED
-	- save grid & restore grid
 
 Controllers
 -----------
 - Game
 	- set state : None, Empty, Filled, Maybe E/F DONE
-	- save game ?
-	- reset game
+	- reset game / return to menu E
 	- remove all maybe’s DONE
 	- validate all maybe’s DONE
-	- game mode: checked / free IN PROGRESS
-	- game finished IN PROGRESS
+	- game mode: checked / free IN PROGRESS E
+	- game finished IN PROGRESS 
+		- time starts at start game V
+		- additional time for penalties V
+		- time stops V
+		- play again (+options: reset/return in evidence) V/E ?
+	- game visualisation in elastic search V
+		- user, time, %finished, finished, #penalties, time_score
 
 Content
 -------
-- Test grids
+- Test grids E
