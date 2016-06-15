@@ -49,15 +49,15 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   // heartbeat towards elastic server.
   val uri = "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonogramsv01/stats/"
-  // trigger to commit or not
+  // TODO trigger to commit or not
   val commitResult = false
   // generate random indices
   def idx = scala.util.Random.nextInt(Integer.MAX_VALUE)
 
   // timer to trigger action every second
-  val timer = Timer(5000) {
+  val timer = Timer(2000) {
     val i = idx
-    println("heartbeat: sending data with ID #" + i)
+    println("heartbeat: sending data to AWS with ID #" + i)
 
     // push the current result to server
     if (commitResult) {
@@ -67,11 +67,15 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       val penalty = time_string
       cal.setTimeInMillis(time_reference_to_use + userGrid.penaltiesTime)
       val total_time = time_string
-      val result = Http(uri + i).postData("{" +
+      cal.setTimeInMillis(System.currentTimeMillis())
+      val now = DateTime.current(cal)
+      val data = "{" +
         "\"user\":\""+ User.getUser + "\"," + // string
         "\"version\":\"" + "0.1" + "\"," + // string
-        "\"grid_id\":" + g.gridid + "\"," + // int
-        "\"time\":\"" + System.currentTimeMillis() + "\"," + // int
+        "\"grid_id\":" + g.gridid + "," + // int
+        "\"time\":" + System.currentTimeMillis() + "," + // int
+        "\"time_p\":\"" + System.currentTimeMillis() + "\"," + // int
+        "\"date\":\"" + now + "\"," + // date
         "\"time_elapsed\":\"" + elapsed + "\"," + // formatted date mm:ss:SSS
         "\"time_elapsed_raw\":" + time_reference_to_use + "," + // int
         "\"time_penalty\":\"" + penalty + "\"," + // formatted date mm:ss:SSS
@@ -83,7 +87,11 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
         "\"filled_percent\":" + filled_percent + "," + // int
         "\"finished\":" + userGrid.isfinished + "," + // bool
         "\"production\":" + false + "" + // bool
-        "}").asString
+        "}"
+
+      println (data)
+
+      val result = Http(uri + i).postData(data).asString
 
       println(result.body)
     }
@@ -229,11 +237,14 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       print("CONGRATS!", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
 
       if (g.random) {
+        // TODO: this cause a bug for now.
+        /*
         val new_button = new Button(10, 210, 200, 70, "New Grid", Colors.METRO_GREEN, NonogramsOffline, () => {
           stop()
           selectedGrid.setGrid(new Grid(sizeX, sizeY))
           NonogramsOffline.run()
         })
+        */
       }
     } else {
       print("...keep playing...", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
@@ -280,7 +291,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   }
 
   interface {
-    print(xml("launcher.info"), 10, 10, 10.0f, BLACK)
+    print(xml("launcher.info"), 10, 10, 14.0f, BLACK)
 
     // information about current game status / evolution
     print("Playing:", Vec(Xprint_data, Yprint_text(1)), BLACK)
@@ -383,6 +394,12 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 // Timer ideas from http://otfried.org/scala/timers.html
 object Time {
   private val form = new java.text.SimpleDateFormat("mm:ss:SSS")
+  def current (time:java.util.Calendar = java.util.Calendar.getInstance()) = form.format(time.getTime)
+}
+
+// Timer ideas from http://otfried.org/scala/timers.html
+object DateTime {
+  private val form = new java.text.SimpleDateFormat("YYYY-MM-YY HH:mm")
   def current (time:java.util.Calendar = java.util.Calendar.getInstance()) = form.format(time.getTime)
 }
 

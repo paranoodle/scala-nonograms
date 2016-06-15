@@ -59,13 +59,72 @@ object LauncherMainMenu extends ScreenApp("Nonograms Scala Scage Game", 800, 600
   })
 
   interface {
-    print(xml("launcher.info"), 10, 10, BLACK)
+    print(xml("launcher.info"), 10, 10, 14.0f, BLACK)
   }
 
   render {
+    var text = "You are playing as anonymous. Change your username maybe? Try names of the class."
     if (User.current != "") {
-      // TODO: change position
-      print("You are currently playing as " + User.current, Vec(10, 450), BLACK)
+      // easter egg with names from the students and teachers
+      var todisplay = User.current
+      // students in the class (10)
+      if (User.current.matches(".*mig.*") || User.current.matches(".*san.*") || User.current.matches(".*jer.*") || User.current.matches(".*mor.*")) {
+        todisplay = "I <3 Vaud 4 ever !"
+      } else if (User.current.matches(".*val.*") || User.current.matches(".*min.*")) {
+        todisplay = "#erasmus #wodka #poland #party"
+      } else if (User.current.matches(".*para.*") || User.current.matches(".*eleo.*")) {
+        todisplay = "I <3 Cats"
+      } else if (User.current.matches(".*j[ia]m.*") || User.current.matches(".*nol.*")) {
+        todisplay = "#erasmus #HolaChicas #fiesta #sangria"
+      } else if (User.current.matches(".*mel.*") || User.current.matches(".*hk.*")) {
+        todisplay = "I <3 Teakwondo"
+      } else if (User.current.matches(".*yas.*") || User.current.matches(".*kam.*")) {
+        todisplay = "report Over 9000 pages"
+      } else if (User.current.matches(".*kar.*") || User.current.matches(".*goz.*")) {
+        todisplay = "Vive Eurosport ;)"
+      } else if (User.current.matches(".*dav.*") || User.current.matches(".*kun.*")) {
+        todisplay = "#TheTanners #erasmus #norway"
+      } else if (User.current.matches(".*[ijy]an.*") || User.current.matches(".*pur.*")) {
+        todisplay = "I <3 Valais 4ever"
+        // other students
+      } else if (User.current.matches(".*bas.*") || User.current.matches(".*rou.*")) {
+        todisplay = "#erasmus #Korea #mercilaDGES #"
+      } else if (User.current.matches(".*ben.*") || User.current.matches(".*wol.*") || User.current.matches(".*cav.*")) {
+        todisplay = "Expert Java #1"
+      } else if (User.current.matches(".*leo.*") || User.current.matches(".*bern.*")) {
+        todisplay = "#JeSuisLeonard"
+      } else if (User.current.matches(".*fab.*") ||  User.current.matches(".*sal.*")) {
+        todisplay = "#SeeYouNextYear"
+      } else if (User.current.matches(".*sac.*") || User.current.matches(".*bro.*") || User.current.matches(".*cop.*") || User.current.matches(".*bin.*")) {
+        todisplay = "#JeSaisPasCoder #JeSuisSB"
+      } else if (User.current.matches(".*mic.*") || User.current.matches(".*bert.*")) {
+        todisplay = "I <3 InstantStock, Vaud & Baleinev 4 ever"
+      } else if (User.current.matches(".*ra[fp].*") || User.current.matches(".*mas.*")) {
+        todisplay = "#CafeAddict I <3 Valais 4ever"
+      } else if (User.current.matches(".*ste.*") || User.current.matches(".*don.*")) {
+        todisplay = "I <3 Vaud & Baleinev 4ever"
+      } else if (User.current.matches(".*ien.*") || User.current.matches(".*gar.*")) {
+        todisplay = "I <3 MacOS 4ever"
+        // teachers
+      } else if (User.current.matches(".*nas.*") || User.current.matches(".*ate.*")) {
+        todisplay = "I <3 Scala 4ever"
+      } else if (User.current.matches(".*jon.*") || User.current.matches(".*bis.*")) {
+        todisplay = "I <3 scala.JS 4ever "
+      } else if (User.current.matches(".*ren.*")) {
+        todisplay = "#ADA Implicitement Typiquement "
+      } else if (User.current.matches(".*rob.*")) {
+        todisplay = "best travel organizer ever"
+      } else if (User.current.matches(".*oli.*") || User.current.matches(".*lie.*")) {
+        todisplay = "I <3 web & JavaEE 4ever"
+      } else if (User.current.matches(".*eri.*") || User.current.matches(".*fra.*")) {
+        todisplay = "I <3 Swing 1.0 NEW! & Comic Sans 4ever"
+      } else if (User.current.matches(".*art.*") || User.current.matches(".*ode.*")) {
+        todisplay = "I created Scala, respect to the PGM you newbies!"
+      }
+
+
+      text = "You are currently playing as: " + todisplay + "(AKA " + User.current + ")"
     }
+    print(text, Vec(10, 580), BLACK)
   }
 }
