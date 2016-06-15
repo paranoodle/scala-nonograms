@@ -30,6 +30,21 @@ class Grid(any: Boolean) {
     generateHints()
   }
 
+  // creates a grid from a list of strings (human-readable)
+  def this(s: List[String], readable: Boolean) = {
+    this(true)
+
+    var sol: List[List[Boolean]] = List()
+    for (x <- 0 until s(0).size) {
+      sol = (0 until s.size).map(y => (s(y)(x) == '1')).toList :: sol
+    }
+    solution = sol.reverse
+
+    require(sizeX > 0)
+    require(sizeY > 0)
+    generateHints()
+  }
+
   // generates a random grid of default size 10x8
   def this() {
     this(true)
