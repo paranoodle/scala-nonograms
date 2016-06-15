@@ -46,7 +46,10 @@ class UserGrid(grid: Grid) {
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) = userSolution(x)(y) match {
         case MaybeEmpty() => Empty()
-        case MaybeFilled() => Filled()
+        case MaybeFilled() => {
+          if (grid.solution(x)(y)) Filled()
+          else Tried()
+        }
         case _ => userSolution(x)(y)
       }
     }

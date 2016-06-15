@@ -159,7 +159,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
           drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, METRO_BLUE)
           print("?", Vec(posX, posY + 2), WHITE, align = "center")
         case Tried() =>
-          print("!", Vec(posX, posY + 2), METRO_RED, align = "center")
+          print("X", Vec(posX, posY + 2), METRO_RED, align = "center")
       }
     }
 
