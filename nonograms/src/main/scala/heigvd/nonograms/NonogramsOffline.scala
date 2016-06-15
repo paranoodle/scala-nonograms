@@ -243,6 +243,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     print("Penalties:", Vec(Xprint_data, Yprint_text(3)), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(3) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 2), BLACK)
     print("Total time:", Vec(Xprint_data, Yprint_text(4)), BLACK)
+    val useless = g.numberFilled()
   }
 
   /* Handles left-click events */

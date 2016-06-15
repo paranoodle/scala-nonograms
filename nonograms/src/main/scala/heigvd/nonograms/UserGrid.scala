@@ -36,13 +36,35 @@ class UserGrid(grid: Grid) {
   var isfinished = false
 
   // start time: set up and freeze when first called
-  lazy val time_start:Long = System.currentTimeMillis()
+  private lazy val time_start_init:Long = System.currentTimeMillis()
+  // start time: user-defined override (used by reset, ASSIGN TO CURRENT TIME TO RESET)
+  private var time_start_override:Long = 0
+  // get the start time: to be called from the outside
+  def time_start():Long = {
+    if (time_start_override != 0) {
+      time_start_override
+    } else {
+      time_start_init
+    }
+  }
 
   /* Return the elapsed time since the class was launched */
   def time_elapsed:Long = System.currentTimeMillis() - time_start
 
+  // implementation of a "reassignable lazy val"
+  // end time: set up and freeze when first called (ASSIGN TO ZERO TO RESET)
+  private var time_finished_override:Long = 0
   // end time: set up and freeze when first called
-  lazy val time_finished:Long = System.currentTimeMillis() - time_start
+  def time_finished (): Long = {
+    if (isfinished) {
+      if (time_finished_override == 0) {
+        time_finished_override = System.currentTimeMillis() - time_start
+      }
+      time_finished_override
+    } else {
+      time_elapsed
+    }
+  }
 
   // the array of cell state of the current game
   var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
@@ -86,12 +108,12 @@ class UserGrid(grid: Grid) {
     userSolution = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
 
     // updates the cached values
-    // TODO: how to reset time
-    // TODO: check behavior if game was already finished.
+    time_start_override = System.currentTimeMillis()
     isfinished = false
     checkGameFinishedAgainstHints()
     numberFilled()
     numberPenalties()
+    time_finished_override = 0
   }
 
   // Util method to transpose a CellType to Boolean (default: false)

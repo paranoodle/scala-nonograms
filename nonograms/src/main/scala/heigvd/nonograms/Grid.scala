@@ -121,6 +121,8 @@ class Grid(any: Boolean) {
     // rows
     for (yi <- 0 until sizeY)
       rows_hint :+= generateHintsFromList(solution.map(x => x(yi)))
+
+    numberFilled()
   }
 
   // take a list of Boolean and return the corresponding hints as a list of Number
