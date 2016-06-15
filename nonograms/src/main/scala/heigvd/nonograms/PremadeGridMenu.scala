@@ -19,7 +19,7 @@ object PremadeGridMenu extends Screen("Nonograms") with MultiController {
       "0111111111",
       "0111000101",
       "0101000101"
-    ), true))
+    ), 1))
     NonogramsOffline.run()
   })
 
