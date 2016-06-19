@@ -11,8 +11,9 @@ import scalaj.http._
   * View to play the game - the most important and complex part of this project!
   */
 object NonogramsOffline extends Screen() with MultiController {
-  def g: Grid = SelectedGrid.getGrid()
-  def userGrid: UserGrid = SelectedGrid.getUserGrid()
+  backgroundColor = WHITE
+
+  // ********** HEARTBEAT AWS ********** //
 
   val cal = java.util.Calendar.getInstance()
 
@@ -67,12 +68,19 @@ object NonogramsOffline extends Screen() with MultiController {
 
   }
 
-  val button_field_width = 220
+  // ********** BUTTONS ********** //
 
-  backgroundColor = WHITE
+  private val buttonHeight = 70
+  private val marginWidth = 10
+  private val buttonWidth = 200
+  private val marginHeight = 50
+  private val buttonHeightOffset = buttonHeight + marginWidth
+  private val menuWidth = buttonWidth + 2 * marginWidth
+  private def buttonHeightBottom (x:Int) = marginHeight + x * buttonHeightOffset
+  private def buttonHeightTop (x:Int) = windowHeight - marginWidth - (x+1) * buttonHeightOffset
 
   var maybeStatus = false
-  val maybeButton : ToggleButton = new ToggleButton(10, windowHeight - 80, 200, 70,
+  val maybeButton : ToggleButton = new ToggleButton(marginWidth, buttonHeightTop(0), buttonWidth, buttonHeight,
     Colors.METRO_BLUE, GRAY, xml("todraft.game"), xml("indraft.game"), NonogramsOffline,
     () => {
       cancelButton.activate()
@@ -81,7 +89,7 @@ object NonogramsOffline extends Screen() with MultiController {
       println("Switching to draft mode")
     })
 
-  val cancelButton : ToggleButton = new ToggleButton(10, windowHeight - 160, 95, 70,
+  val cancelButton : ToggleButton = new ToggleButton(marginWidth, buttonHeightTop(1), 95, buttonHeight,
     Colors.METRO_RED, WHITE, xml("canceldraft.game"), "", NonogramsOffline,
     () => {
       userGrid.removeAllMaybe()
@@ -92,7 +100,7 @@ object NonogramsOffline extends Screen() with MultiController {
     })
   cancelButton.deactivate()
 
-  val validateButton : ToggleButton = new ToggleButton(115, windowHeight - 160, 95, 70,
+  val validateButton : ToggleButton = new ToggleButton(marginWidth + 105, buttonHeightTop(1), 95, buttonHeight,
     Colors.METRO_GREEN, WHITE, xml("applydraft.game"), "", NonogramsOffline,
     () => {
       userGrid.validateAllMaybe()
@@ -103,18 +111,32 @@ object NonogramsOffline extends Screen() with MultiController {
     })
   validateButton.deactivate()
 
-  val new_button = new Button(10, 210, 200, 70, xml("button.newgrid"), Colors.METRO_GREEN, NonogramsOffline, () => {
+  val new_button = new Button(marginWidth, buttonHeightBottom(2), buttonWidth, buttonHeight,
+    xml("button.newgrid"), Colors.METRO_GREEN, NonogramsOffline, () => {
     SelectedGrid.setGrid(new Grid(sizeX, sizeY))
   })
 
-  val back_button = new Button(10, 50, 200, 70, xml("button.back"), Colors.METRO_ORANGE, NonogramsOffline, () => {
+  val back_button = new Button(marginWidth, buttonHeightBottom(0), buttonWidth, buttonHeight
+    , xml("button.back"), Colors.METRO_ORANGE, NonogramsOffline, () => {
     stop()
   })
 
-  val reset_button = new Button(10, 130, 200, 70, xml("button.reset"), Colors.METRO_RED, NonogramsOffline, () => {
+  val reset_button = new Button(marginWidth, buttonHeightBottom(1), buttonWidth, buttonHeight,
+    xml("button.reset"), Colors.METRO_RED, NonogramsOffline, () => {
     userGrid.resetGame()
   })
-  
+
+
+  val percent_full_button = new Button(marginWidth, buttonHeightBottom(3), buttonWidth, buttonHeight/2,
+    xml("gaming.game"), Colors.METRO_RED, NonogramsOffline, () => {
+  })
+
+  var percent_partial_button = new Button(marginWidth, buttonHeightBottom(3), 2, buttonHeight/2,
+    "", Colors.METRO_GREEN, NonogramsOffline, () => {})
+
+  // ********** GRID MANAGEMENT ********** //
+  def g: Grid = SelectedGrid.getGrid()
+  def userGrid: UserGrid = SelectedGrid.getUserGrid()
   userGrid.printMyGrid()
 
   def grid = g.solution
@@ -130,9 +152,7 @@ object NonogramsOffline extends Screen() with MultiController {
   // The origin X is at the left of the grid (row hints to the left, grid to the right)
   // The origin Y is at the bottom of the grid (grid and col hints are above)
   // Both are designed to center [grid+hints] in the middle of the window.
-  val buttonSize = 200
-  val menuSize = buttonSize + 20
-  def originX = (windowWidth - menuSize - (gridSpacing * (sizeX - rowHintMax))) / 2 + menuSize
+  def originX = (windowWidth - menuWidth - (gridSpacing * (sizeX - rowHintMax))) / 2 + menuWidth
   def originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
 
 
@@ -144,6 +164,8 @@ object NonogramsOffline extends Screen() with MultiController {
 
   /* Return the cal as a formatted string. Update cal first. */
   def time_string = Time.current(cal)
+
+  // ********** RENDERING ********** //
 
   render {
     // horizontal grid lines
@@ -208,69 +230,53 @@ object NonogramsOffline extends Screen() with MultiController {
 
     // information about current game status / evolution
     if (userGrid.isFinishedCache) {
-      print(xml("finished.game"), Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
+      print(xml("finished.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK, "default")
     } else {
-      print(xml("gaming.game"), Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
+      print(xml("gaming.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK, "default")
     }
 
     // current state of game
     val text = filled_percent + "% (" + userGrid.numberFilledCache + "/" + g.numberFilledCache + ")"
-    print(text, Vec(Xprint_text, Yprint_text(1)), BLACK)
+    print(text, Vec(Xprint_text, Yprint_text(4) - 10), BLACK)
 
     // timers
     cal.setTimeInMillis(time_reference_to_use)
-    print(time_string, Vec(Xprint_text, Yprint_text(2)))
+    print(time_string, Vec(Xprint_text, Yprint_text(1)))
 
     // show the penalties in red if any
     if (userGrid.numberPenaltiesCache > 0) {
       cal.setTimeInMillis(userGrid.penaltiesTime)
-      print(time_string, Vec(Xprint_text, Yprint_text(3)), Colors.METRO_RED, "default")
+      print(time_string, Vec(Xprint_text, Yprint_text(2)), Colors.METRO_RED, "default")
       cal.setTimeInMillis(time_reference_to_use + userGrid.penaltiesTime)
-      print(time_string, Vec(Xprint_text, Yprint_text(4)), Colors.METRO_RED, "default")
+      print(time_string, Vec(Xprint_text, Yprint_text(3)), Colors.METRO_RED, "default")
     } else {
       // otherwise, just print 0 time for penalties
-      print(time_string, Vec(Xprint_text, Yprint_text(4)), BLACK, "default")
-      cal.setTimeInMillis(0)
       print(time_string, Vec(Xprint_text, Yprint_text(3)), BLACK, "default")
+      cal.setTimeInMillis(0)
+      print(time_string, Vec(Xprint_text, Yprint_text(2)), BLACK, "default")
     }
 
 
+    percent_partial_button = new Button(marginWidth, buttonHeightBottom(3), filled_percent * 2, buttonHeight/2,
+      "", Colors.METRO_GREEN, NonogramsOffline, () => {})
   }
 
-  def filled_percent = {
-    if (g.numberFilledCache != 0) {
-      userGrid.numberFilledCache * 100 / g.numberFilledCache
-    } else {
-      -1
-    }
-  }
-
-  def time_reference_to_use = {
-    if (userGrid.isFinishedCache) {
-      userGrid.time_finished
-    } else {
-      userGrid.time_elapsed
-    }
-  }
-
+  // non-moving / editable items in interface.
   interface {
     print(xml("launcher.info"), 10, 10, BLACK)
-
     // information about current game status / evolution
-    print(xml("playing.game"), Vec(Xprint_data, Yprint_text(1)), BLACK)
-    print(xml("time.game"), Vec(Xprint_data, Yprint_text(2)), BLACK)
-    print(xml("penalties.game"), Vec(Xprint_data, Yprint_text(3)), BLACK)
+    print(xml("playing.game"), Vec(Xprint_data, Yprint_text(4) - 10), BLACK)
+    print(xml("time.game"), Vec(Xprint_data, Yprint_text(1)), BLACK)
+    print(xml("penalties.game"), Vec(Xprint_data, Yprint_text(2)), BLACK)
+    drawLine(Vec(Xprint_data, Yprint_text(2) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(2) - 2), BLACK)
+    print(xml("total.game"), Vec(Xprint_data, Yprint_text(3)), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(3) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 2), BLACK)
-    print(xml("total.game"), Vec(Xprint_data, Yprint_text(4)), BLACK)
+    drawLine(Vec(Xprint_data, Yprint_text(3) - 0), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 0), BLACK)
     val useless = g.numberFilled()
   }
 
   /* Handles left-click events */
   leftMouse(onBtnDown = {m =>
-    //maybeButton.click(m)
-    //cancelButton.click(m)
-    //validateButton.click(m)
-
     // if the game is finished, has no effect
     if (userGrid.isFinishedCache) {
       println("no clicks: game is finished")
@@ -302,6 +308,25 @@ object NonogramsOffline extends Screen() with MultiController {
       }
     }
   })
+
+  // ********** UTILITIES ********** //
+  /* Return the percent of filled grid. */
+  def filled_percent = {
+    if (g.numberFilledCache != 0) {
+      userGrid.numberFilledCache * 100 / g.numberFilledCache
+    } else {
+      -1
+    }
+  }
+
+  /** Return the time to print */
+  def time_reference_to_use = {
+    if (userGrid.isFinishedCache) {
+      userGrid.time_finished
+    } else {
+      userGrid.time_elapsed
+    }
+  }
 
   /* Helper method to convert array position to screen positions */
   def arrayToScreen(x: Int, y: Int, offset: Int = 0): (Int, Int) = {
