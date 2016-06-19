@@ -35,6 +35,3 @@ Content
 - Test grids E
 
 
-Known Bugs
-==========
-- pressing "new grid" after finishing a grid, then pressing "back" is buggy

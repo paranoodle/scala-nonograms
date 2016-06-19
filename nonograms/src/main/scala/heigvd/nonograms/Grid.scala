@@ -25,36 +25,51 @@ class Grid(any: Boolean) {
 
   def sizeY = if (solution.size == 0) 0 else solution.map(_.size).max
 
-  // creates a grid with given values, and generates hints
-  def this(sol: List[List[Boolean]]) = {
+  // creates a grid with given boolean values(with default human-readable: true)
+  def this(sol: List[List[Boolean]], humanReadable: Boolean = true) = {
     this(true)
     solution = sol
-    require(sizeX > 0)
-    require(sizeY > 0)
-    generateHints()
+    init(humanReadable)
   }
 
-  // creates a grid from a list of strings (human-readable)
-  def this(s: List[String], id: Int) = {
+  // creates a grid from a given list of strings 0/1 (with default human-readable: true)
+  def this(s: List[String], id: Int, humanReadable: Boolean = true) = {
     this(true)
-
     gridid = id
 
     var sol: List[List[Boolean]] = List()
-    for (x <- 0 until s(0).size) {
-      sol = (0 until s.size).map(y => (s(y)(x) == '1')).toList :: sol
+    for (x <- s) {
+      sol = x.map(y => (y == '1')).toList :: sol
     }
     solution = sol.reverse
+    init(humanReadable)
+  }
 
+  /**
+    * in case of human readable change the orientation of grid, then check requirements, generates hints
+    */
+  private def init(humanReadable: Boolean): Unit = {
+    // inversion of rows and columns if human-readable format was given! (otherwise, don't touch anything)
+    if (humanReadable) {
+      var sol: List[List[Boolean]] = List()
+      for (yi <- 0 until sizeY) {
+        var partial: List[Boolean] = List()
+        for (xi <- 0 until sizeX) {
+          partial = solution(xi)(yi) :: partial
+        }
+        sol = partial.reverse :: sol
+      }
+      solution = sol.reverse
+    }
     require(sizeX > 0)
     require(sizeY > 0)
     generateHints()
   }
 
-  // generates a random grid of default size 10x8
+  // generates a random grid of default size 10x10
   def this() {
     this(true)
-    generateRandom(10, 8)
+    generateRandom(10, 10)
   }
 
   // generates a square random grid of specified size
@@ -175,13 +190,4 @@ class Grid(any: Boolean) {
   }
 
 
-}
-
-object myMain {
-  def main(args: Array[String]): Unit = {
-    println("Hello from main of class")
-    val g = new Grid
-    g.printGrid()
-    g.printHints()
-  }
 }

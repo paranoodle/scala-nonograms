@@ -1,7 +1,5 @@
 package heigvd.nonograms
 
-import java.util.Date
-
 import com.github.dunnololda.scage.ScageLib._
 import com.github.dunnololda.scage.support.{ScageColor, Vec}
 
@@ -11,9 +9,10 @@ object selectedGrid {
   var grid: Grid = new Grid()
   var userGrid: UserGrid = new UserGrid(grid)
 
-  def setGrid(g: Grid) = {
+  def setGrid(g: Grid, checkMode: Boolean = false) = {
     grid = g
     userGrid = new UserGrid(grid)
+    userGrid.checkMode = checkMode
   }
   def getGrid() = grid
   def getUserGrid() = userGrid
@@ -41,7 +40,7 @@ object Colors {
   val METRO_YELLOW = new ScageColor("Metro Yellow", 0xff, 0xc4, 0x25)
 }
 
-object NonogramsOffline extends Screen("Nonograms") with MultiController {
+object NonogramsOffline extends Screen() with MultiController {
   def g: Grid = selectedGrid.getGrid()
   def userGrid: UserGrid = selectedGrid.getUserGrid()
 
@@ -85,7 +84,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
         "\"time_total_raw\":" + (time_reference_to_use + userGrid.penaltiesTime) + "," + // int
         "\"filled_value\":" + userGrid.numberFilledCache + "," +
         "\"filled_percent\":" + filled_percent + "," + // int
-        "\"finished\":" + userGrid.isfinished + "," + // bool
+        "\"finished\":" + userGrid.isFinishedCache + "," + // bool
         "\"production\":" + false + "" + // bool
         "}"
 
@@ -104,7 +103,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
 
   var maybeStatus = false
   val maybeButton : ToggleButton = new ToggleButton(10, windowHeight - 80, 200, 70,
-    Colors.METRO_BLUE, GRAY, "To Draft Mode", "In Draft Mode", NonogramsOffline,
+    Colors.METRO_BLUE, GRAY, xml("todraft.game"), xml("indraft.game"), NonogramsOffline,
     () => {
       cancelButton.activate()
       validateButton.activate()
@@ -113,7 +112,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     })
 
   val cancelButton : ToggleButton = new ToggleButton(10, windowHeight - 160, 95, 70,
-    Colors.METRO_RED, WHITE, "Cancel\nDraft", "", NonogramsOffline,
+    Colors.METRO_RED, WHITE, xml("canceldraft.game"), "", NonogramsOffline,
     () => {
       userGrid.removeAllMaybe()
       maybeButton.activate()
@@ -124,7 +123,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   cancelButton.deactivate()
 
   val validateButton : ToggleButton = new ToggleButton(115, windowHeight - 160, 95, 70,
-    Colors.METRO_GREEN, WHITE, "Apply\nDraft", "", NonogramsOffline,
+    Colors.METRO_GREEN, WHITE, xml("applydraft.game"), "", NonogramsOffline,
     () => {
       userGrid.validateAllMaybe()
       maybeButton.activate()
@@ -134,16 +133,19 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     })
   validateButton.deactivate()
 
-  val back_button = new Button(10, 50, 100, 70, "Back", Colors.METRO_ORANGE, NonogramsOffline, () => {
+  val new_button = new Button(10, 210, 200, 70, xml("button.newgrid"), Colors.METRO_GREEN, NonogramsOffline, () => {
+    selectedGrid.setGrid(new Grid(sizeX, sizeY))
+  })
+
+  val back_button = new Button(10, 50, 200, 70, xml("button.back"), Colors.METRO_ORANGE, NonogramsOffline, () => {
     stop()
   })
 
-  val reset_button = new Button(10, 130, 100, 70, "Reset", Colors.METRO_RED, NonogramsOffline, () => {
+  val reset_button = new Button(10, 130, 200, 70, xml("button.reset"), Colors.METRO_RED, NonogramsOffline, () => {
     userGrid.resetGame()
   })
   
   userGrid.printMyGrid()
-  def userSol = userGrid.userSolution
 
   def grid = g.solution
   def sizeX = g.sizeX
@@ -215,7 +217,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       // to hide solution (maybe to remove)
       //drawFilledRectCentered(Vec(posX, posY), fullSize, fullSize, WHITE)
 
-      userSol(x)(y) match {
+      userGrid.getUserSolution(x)(y) match {
         case Empty() =>
           print("X", Vec(posX, posY + 2), BLACK, align = "center")
         case Filled() =>
@@ -233,21 +235,10 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     }
 
     // information about current game status / evolution
-    if (userGrid.isfinished) {
-      print("CONGRATS!", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
-
-      if (g.random) {
-        // TODO: this cause a bug for now.
-        /*
-        val new_button = new Button(10, 210, 200, 70, "New Grid", Colors.METRO_GREEN, NonogramsOffline, () => {
-          stop()
-          selectedGrid.setGrid(new Grid(sizeX, sizeY))
-          NonogramsOffline.run()
-        })
-        */
-      }
+    if (userGrid.isFinishedCache) {
+      print(xml("finished.game"), Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
     } else {
-      print("...keep playing...", Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
+      print(xml("gaming.game"), Vec(Xprint_data, Yprint_text(5)), BLACK, "default")
     }
 
     // current state of game
@@ -283,7 +274,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   }
 
   def time_reference_to_use = {
-    if (userGrid.isfinished) {
+    if (userGrid.isFinishedCache) {
       userGrid.time_finished
     } else {
       userGrid.time_elapsed
@@ -291,14 +282,14 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   }
 
   interface {
-    print(xml("launcher.info"), 10, 10, 14.0f, BLACK)
+    print(xml("launcher.info"), 10, 10, BLACK)
 
     // information about current game status / evolution
-    print("Playing:", Vec(Xprint_data, Yprint_text(1)), BLACK)
-    print("Time:", Vec(Xprint_data, Yprint_text(2)), BLACK)
-    print("Penalties:", Vec(Xprint_data, Yprint_text(3)), BLACK)
+    print(xml("playing.game"), Vec(Xprint_data, Yprint_text(1)), BLACK)
+    print(xml("time.game"), Vec(Xprint_data, Yprint_text(2)), BLACK)
+    print(xml("penalties.game"), Vec(Xprint_data, Yprint_text(3)), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(3) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 2), BLACK)
-    print("Total time:", Vec(Xprint_data, Yprint_text(4)), BLACK)
+    print(xml("total.game"), Vec(Xprint_data, Yprint_text(4)), BLACK)
     val useless = g.numberFilled()
   }
 
@@ -309,7 +300,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
     //validateButton.click(m)
 
     // if the game is finished, has no effect
-    if (userGrid.isfinished) {
+    if (userGrid.isFinishedCache) {
       println("no clicks: game is finished")
     } else {
       val (x, y) = screenToArray(m.x, m.y)
@@ -318,26 +309,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       if (!((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY))) {
         println("no clicks here")
       } else {
-        if (maybeStatus) {
-          userSol(x)(y) = userSol(x)(y) match {
-            case None() => MaybeFilled()
-            case MaybeEmpty() => None()
-            case MaybeFilled() => None()
-            case _ => userSol(x)(y)
-          }
-        } else {
-          val valid = !userGrid.checkMode || (userGrid.checkMode && grid(x)(y))
-          println(valid)
-          userSol(x)(y) = userSol(x)(y) match {
-            case None() => if (valid) Filled() else Tried()
-            case Empty() => None()
-            case Filled() => None()
-            case _ => userSol(x)(y)
-          }
-
-          userGrid.checkGameFinished(userGrid.checkMode)
-        }
-
+        userGrid.leftClick(x, y, maybeStatus)
       }
     }
   })
@@ -345,7 +317,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
   /* Handles right-click events */
   rightMouse(onBtnDown = { m =>
     // if the game is finished, has no effect
-    if (userGrid.isfinished) {
+    if (userGrid.isFinishedCache) {
       println("no clicks: game is finished")
     } else {
       val (x, y) = screenToArray(m.x, m.y)
@@ -354,21 +326,7 @@ object NonogramsOffline extends Screen("Nonograms") with MultiController {
       if (!((x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY))) {
         println("no clicks here")
       } else {
-        if (maybeStatus) {
-          userSol(x)(y) = userSol(x)(y) match {
-            case None() => MaybeEmpty()
-            case MaybeEmpty() => None()
-            case MaybeFilled() => None()
-            case _ => userSol(x)(y)
-          }
-        } else {
-          userSol(x)(y) = userSol(x)(y) match {
-            case None() => Empty()
-            case Empty() => None()
-            case Filled() => None()
-            case _ => userSol(x)(y)
-          }
-        }
+        userGrid.rightClick(x, y, maybeStatus)
       }
     }
   })

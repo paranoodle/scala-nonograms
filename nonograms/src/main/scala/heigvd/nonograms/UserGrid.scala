@@ -1,39 +1,24 @@
 package heigvd.nonograms
 
-import scala.collection.JavaConverters._
-
-// Types of cells fot the current game played by a user.
-sealed trait CellType;
-// No current state (the default state for all cells)
-case class None() extends CellType
-// Current state is empty (the user believe the state is empty, and solution=false)
-case class Empty() extends CellType
-// Current state is filles (the user believe the state is filled, and solution=true)
-case class Filled() extends CellType
-// same as empty, but the user is not sure yet
-case class MaybeEmpty() extends CellType
-// same as filled, but the user is not sure yet
-case class MaybeFilled() extends CellType
-// same as empty, but the user tried to put (wrongly) a filled state: its a penalty state
-case class Tried() extends CellType
+import heigvd.nonograms
 
 /**
   * Grid currently played by a user, with game state.
+  *
+  * WARNING: THE WHOLE CLASS IS BASED ON CACHED VALUES.
+  * IT DOES NOT UPDATE AUTOMATICALLY WHEN CALLED, USE IT ONLY FOR RENDERING PURPOSES
+
+  * Only speed-up the rendering process, the renderer can't call the internal class
+  * (eg. to check if the game is finished, the number of cells that are filled, etc..)
+  * Instead, these values are kept in cache. Each time the UI makes a change to the model
+  * THROUGH this class, the cached values updates.
   */
 class UserGrid(grid: Grid) {
 
-  var checkMode = true
+  // by default, non-strict mode.
+  var checkMode = false
 
-  /*
-    Stores if the game is finished.
-    WARNING: IT DOES NOT UPDATE AUTOMATICALLY WHEN CALLED, USE IT ONLY FOR RENDERING PURPOSES
-
-    Only speed-up the process, instead of calling either of these:
-    - checkGameFinishedAgainstSolution
-    - checkGameFinishedAgainstHints
-    But when calling these, isfinished updates.
-   */
-  var isfinished = false
+  // ********** TIMERS ********** //
 
   // start time: set up and freeze when first called
   private lazy val time_start_init:Long = System.currentTimeMillis()
@@ -56,7 +41,7 @@ class UserGrid(grid: Grid) {
   private var time_finished_override:Long = 0
   // end time: set up and freeze when first called
   def time_finished (): Long = {
-    if (isfinished) {
+    if (isFinishedCache) {
       if (time_finished_override == 0) {
         time_finished_override = System.currentTimeMillis() - time_start
       }
@@ -66,25 +51,79 @@ class UserGrid(grid: Grid) {
     }
   }
 
-  // the array of cell state of the current game
-  var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
+  // ********** USER SOLUTION ********** //
 
-  // change the state of a single cell
+  // the array of cell state of the current game
+  private var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(nonograms.None())
+
+  // get the state of a single cell (getter)
+  def getUserSolution(x: Int)(y:Int) : CellType = {
+    userSolution(x)(y)
+  }
+
+  // change the state of a single cell (setter) & update cache
   def change(x: Int, y: Int, state: CellType): Unit = {
-    userSolution(x)(y) = state
+    userSolution(x)(y) = state match {
+      case Tried() => nonograms.None()
+      case _ => state
+    }
     // updates the cache
-    numberFilled()
+    updateCache()
+  }
+
+  // ********** HANDLING CLICKS & Update cache ********** //
+
+  def leftClick(x: Int, y: Int, maybeStatus: Boolean = false) = {
+    if (maybeStatus) {
+      userSolution(x)(y) = userSolution(x)(y) match {
+        case None() => MaybeFilled()
+        case MaybeEmpty() => nonograms.None()
+        case MaybeFilled() => nonograms.None()
+        case _ => userSolution(x)(y)
+      }
+    } else {
+      val valid = !checkMode || (checkMode && grid.solution(x)(y))
+      println(valid)
+      userSolution(x)(y) = userSolution(x)(y) match {
+        case None() => if (valid) Filled() else Tried()
+        case Empty() => nonograms.None()
+        case Filled() => nonograms.None()
+        case _ => userSolution(x)(y)
+      }
+
+      updateCache()
+    }
+  }
+
+  def rightClick(x: Int, y: Int, maybeStatus: Boolean = false) = {
+    if (maybeStatus) {
+      userSolution(x)(y) = userSolution(x)(y) match {
+        case None() => MaybeEmpty()
+        case MaybeEmpty() => nonograms.None()
+        case MaybeFilled() => nonograms.None()
+        case _ => userSolution(x)(y)
+      }
+    } else {
+      userSolution(x)(y) = userSolution(x)(y) match {
+        case None() => Empty()
+        case Empty() => nonograms.None()
+        case Filled() => nonograms.None()
+        case _ => userSolution(x)(y)
+      }
+    }
   }
 
   // reset all "maybe" sign to None(), game is now to the last known stable state
   def removeAllMaybe() = {
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) = userSolution(x)(y) match {
-        case MaybeEmpty() => None()
-        case MaybeFilled() => None()
+        case MaybeEmpty() => nonograms.None()
+        case MaybeFilled() => nonograms.None()
         case _ => userSolution(x)(y)
       }
     }
+    // updates the cache
+    updateCache()
   }
 
   // validates all the "maybe" states to their corresponding stable state
@@ -93,28 +132,29 @@ class UserGrid(grid: Grid) {
       userSolution(x)(y) = userSolution(x)(y) match {
         case MaybeEmpty() => Empty()
         case MaybeFilled() => {
-          if (grid.solution(x)(y)) Filled()
-          else Tried()
+          if (checkMode && !grid.solution(x)(y)) Tried()
+          else Filled()
         }
         case _ => userSolution(x)(y)
       }
     }
     // updates the cache
-    numberFilled()
+    updateCache()
   }
 
   // reset the game to the starting point (all None)
   def resetGame() = {
-    userSolution = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
+    userSolution = Array.fill[CellType](grid.sizeX, grid.sizeY)(nonograms.None())
 
     // updates the cached values
     time_start_override = System.currentTimeMillis()
-    isfinished = false
-    checkGameFinishedAgainstHints()
+    checkGameIsFinished()
     numberFilled()
     numberPenalties()
     time_finished_override = 0
   }
+
+
 
   // Util method to transpose a CellType to Boolean (default: false)
   private def fromCellTypeToBoolean(c:CellType): Boolean = c match {
@@ -122,6 +162,15 @@ class UserGrid(grid: Grid) {
     case Filled() => true
     case _ => false
   }
+
+  // updates all the caches
+  private def updateCache(): Unit = {
+    checkGameIsFinished(checkMode)
+    numberFilled()
+    numberPenalties()
+  }
+
+  // ********** METRICS ********** //
 
   // return the cached value of number of filled cells
   var numberFilledCache = numberFilled()
@@ -147,22 +196,22 @@ class UserGrid(grid: Grid) {
   /* penalties time calculation */
   def penaltiesTime = numberPenaltiesCache * penalty_time;
 
+  // ********** GAME FINISHED ********** //
 
   /**
+    * Stores if the game is finished (cache)
+    */
+  var isFinishedCache = false
+  /**
   * Check that the game is finished and valid, by default or false against the hints, if true either against the solution.
-  *
   * */
-  def checkGameFinished(checkMode : Boolean = false) = {
-    // updates the caches
-    numberPenalties()
-    numberFilled()
-
+  private def checkGameIsFinished(checkMode: Boolean = false) = {
     // check the finished status and updates the cache
-    isfinished = checkMode match {
+    isFinishedCache = checkMode match {
       case true => checkGameFinishedAgainstSolution()
       case false => checkGameFinishedAgainstHints()
     }
-    isfinished
+    isFinishedCache
   }
 
   /**
@@ -175,7 +224,7 @@ class UserGrid(grid: Grid) {
     * set againstSolution to false (the game is not garantueed to be finished, then).
     *
     * @return Return true if game is completed and valid, false otherwise.
-     */
+    */
   private def checkGameFinishedAgainstSolution(againstSolution:Boolean = true): Boolean = {
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) match {
@@ -227,6 +276,8 @@ class UserGrid(grid: Grid) {
     true
   }
 
+  // ********** TESTS UTILITIES (Print & Random) ********** //
+
   // print the state, for testing purposes mainly
   def printMyGrid(): Unit = {
     println("--- My solution ---")
@@ -251,7 +302,7 @@ class UserGrid(grid: Grid) {
     val r = scala.util.Random
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) = r.nextInt(6) match {
-        case 0 => None()
+        case 0 => nonograms.None()
         case 1 => Empty()
         case 2 => Filled()
         case 3 => MaybeEmpty()
@@ -261,14 +312,4 @@ class UserGrid(grid: Grid) {
     }
   }
 
-}
-
-object myMainUserGrid {
-  def main(args: Array[String]): Unit = {
-    println("Hello from UserGrid main class")
-    val g = new Grid
-    val ug = new UserGrid(g)
-    ug.generateRandomState()
-    ug.printMyGrid()
-  }
 }

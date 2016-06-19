@@ -2,8 +2,6 @@ package heigvd.nonograms
 
 import com.github.dunnololda.scage.ScageLib._
 
-import NonogramsOffline._
-
 class Button(x: Int, y: Int, width: Int, height: Int,
     var text: String = "", var color: ScageColor = RED,
     screen: Screen with MultiController,

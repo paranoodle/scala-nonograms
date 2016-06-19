@@ -1,8 +1,9 @@
 package heigvd.nonograms
 
 import com.github.dunnololda.scage.ScageLib._
+import heigvd.nonograms.HowToMenu._
 
-object RandomGridMenu extends Screen("Nonograms") with MultiController {
+object RandomGridMenu extends Screen() with MultiController {
   backgroundColor = WHITE
 
   val x = (windowWidth - 620) / 2
@@ -11,13 +12,17 @@ object RandomGridMenu extends Screen("Nonograms") with MultiController {
   for (i <- 0 until 3; j <- 0 until 3) {
     val sizeX = (i+1) * 5
     val sizeY = (j+1) * 5
-    new Button(x + (210 * j), y - (80 * i), 200, 70, sizeX + "x" + sizeY + " Grid", Colors.METRO_BLUE, RandomGridMenu, () => {
+    new Button(x + (210 * j), y - (80 * i), 200, 70, sizeX + "x" + sizeY + xml("main.grid"), Colors.METRO_BLUE, RandomGridMenu, () => {
       selectedGrid.setGrid(new Grid(sizeX, sizeY))
       NonogramsOffline.run()
     })
   }
 
-  val back_button = new Button(50, 50, 100, 70, "Back", Colors.METRO_ORANGE, RandomGridMenu, () => {
+  val back_button = new Button(50, 50, 200, 70, xml("button.back"), Colors.METRO_ORANGE, RandomGridMenu, () => {
     RandomGridMenu.stop()
   })
+
+  interface {
+    print(xml("launcher.info"), 10, 10, BLACK)
+  }
 }
