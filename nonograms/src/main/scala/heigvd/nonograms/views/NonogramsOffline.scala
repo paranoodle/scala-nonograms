@@ -130,14 +130,16 @@ object NonogramsOffline extends Screen() with MultiController {
   // The origin X is at the left of the grid (row hints to the left, grid to the right)
   // The origin Y is at the bottom of the grid (grid and col hints are above)
   // Both are designed to center [grid+hints] in the middle of the window.
-  def originX = (windowWidth - (gridSpacing * (sizeX - rowHintMax))) / 2
+  val buttonSize = 200
+  val menuSize = buttonSize + 20
+  def originX = (windowWidth - menuSize - (gridSpacing * (sizeX - rowHintMax))) / 2 + menuSize
   def originY = (windowHeight - (gridSpacing * (sizeY + colHintMax))) / 2
 
 
   /* layout params for information about game status */
-  def Xprint_data = originX
-  def Xprint_text = originX + textOffset
-  def Yprint_text (i:Int) = originY - i * fullSize
+  def Xprint_data = 10
+  def Xprint_text = Xprint_data + textOffset
+  def Yprint_text (i:Int) = 430 - i * fullSize
   val textOffset = gridSpacing * 5
 
   /* Return the cal as a formatted string. Update cal first. */
