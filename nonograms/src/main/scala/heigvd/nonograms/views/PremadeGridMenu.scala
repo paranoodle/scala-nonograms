@@ -1,15 +1,19 @@
-package heigvd.nonograms
+package heigvd.nonograms.views
 
 import com.github.dunnololda.scage.ScageLib._
-import heigvd.nonograms.HowToMenu._
+import heigvd.nonograms.models.{SelectedGrid, Grid}
+import heigvd.nonograms.utils.{Colors, Button}
 
+/**
+  * View to select a pre-saved grid, with a given image to discover.
+  */
 object PremadeGridMenu extends Screen() with MultiController {
   backgroundColor = WHITE
 
   val x = (windowWidth - 200) / 2
 
   val button = new Button(x, 324, 200, 70, xml("grid.name.cat") + " (10x10)", Colors.METRO_BLUE, PremadeGridMenu, () => {
-    selectedGrid.setGrid(new Grid(List(
+    SelectedGrid.setGrid(new Grid(List(
       "0000000011", "0000000111", "1000100110", "1111100111", "1010100011",
       "1111111111", "1101111111", "0111111111", "0111000101", "0101000101"
     ), 1, true), true)

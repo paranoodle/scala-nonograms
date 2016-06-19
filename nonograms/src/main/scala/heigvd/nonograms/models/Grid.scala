@@ -1,4 +1,4 @@
-package heigvd.nonograms
+package heigvd.nonograms.models
 
 /**
   * Manage a grid with its solution and hints.

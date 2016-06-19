@@ -1,6 +1,10 @@
-package heigvd.nonograms
+package heigvd.nonograms.utils
 
 import com.github.dunnololda.scage.ScageLib._
+
+/**
+  * Grafics Utils for buttons and toggle buttons.
+  */
 
 class Button(x: Int, y: Int, width: Int, height: Int,
     var text: String = "", var color: ScageColor = RED,

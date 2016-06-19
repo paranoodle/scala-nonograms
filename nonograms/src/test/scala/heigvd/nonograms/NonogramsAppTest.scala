@@ -1,6 +1,7 @@
 package heigvd.nonograms
 
 import heigvd.nonograms
+import heigvd.nonograms.models._
 import junit.framework._
 import Assert._
 
@@ -217,7 +218,7 @@ class NonogramsAppTest extends TestCase("app") {
 
     // TEST INITIALIZATION : all cells have None() state at the beginning
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
-      assertTrue(checkType(userGrid.getUserSolution(x)(y), None()))
+      assertTrue(checkType(userGrid.getUserSolution(x)(y), models.None()))
     }
 
     // TEST CHANGE: BASIC AFFECTATION IN NON-STRICT MODE
@@ -248,36 +249,36 @@ class NonogramsAppTest extends TestCase("app") {
     // TEST: it should be impossible to affect Tried state.
     userGrid.change(5, 0, Tried())
     userGrid.change(5, 1, Tried())
-    assertTrue(checkType(userGrid.getUserSolution(5)(1), nonograms.None()))
-    assertTrue(checkType(userGrid.getUserSolution(5)(0), nonograms.None()))
+    assertTrue(checkType(userGrid.getUserSolution(5)(1), models.None()))
+    assertTrue(checkType(userGrid.getUserSolution(5)(0), models.None()))
 
     // TEST: the untouched None() state is inaffected by all the changes
-    assertTrue(checkType(userGrid.getUserSolution(0)(0), nonograms.None()))
-    assertTrue(checkType(userGrid.getUserSolution(0)(1), nonograms.None()))
+    assertTrue(checkType(userGrid.getUserSolution(0)(0), models.None()))
+    assertTrue(checkType(userGrid.getUserSolution(0)(1), models.None()))
 
     // TEST REMOVE MAYBE'S
     userGrid.removeAllMaybe()
 
     // Test: All "Maybe*" states must be reset to None()
-    assertTrue(checkType(userGrid.getUserSolution(1)(0), nonograms.None()))
-    assertTrue(checkType(userGrid.getUserSolution(2)(0), nonograms.None()))
-    assertTrue(checkType(userGrid.getUserSolution(1)(1), nonograms.None()))
-    assertTrue(checkType(userGrid.getUserSolution(2)(1), nonograms.None()))
+    assertTrue(checkType(userGrid.getUserSolution(1)(0), models.None()))
+    assertTrue(checkType(userGrid.getUserSolution(2)(0), models.None()))
+    assertTrue(checkType(userGrid.getUserSolution(1)(1), models.None()))
+    assertTrue(checkType(userGrid.getUserSolution(2)(1), models.None()))
 
     // Test: All other states than "Maybe*" must not have changed with reset
-    assertTrue(checkType(userGrid.getUserSolution(0)(0), nonograms.None()))
+    assertTrue(checkType(userGrid.getUserSolution(0)(0), models.None()))
     assertTrue(checkType(userGrid.getUserSolution(3)(0), Empty()))
     assertTrue(checkType(userGrid.getUserSolution(4)(0), Filled()))
-    assertTrue(checkType(userGrid.getUserSolution(5)(0), nonograms.None()))
-    assertTrue(checkType(userGrid.getUserSolution(0)(1), nonograms.None()))
+    assertTrue(checkType(userGrid.getUserSolution(5)(0), models.None()))
+    assertTrue(checkType(userGrid.getUserSolution(0)(1), models.None()))
     assertTrue(checkType(userGrid.getUserSolution(3)(1), Empty()))
     assertTrue(checkType(userGrid.getUserSolution(4)(1), Filled()))
-    assertTrue(checkType(userGrid.getUserSolution(5)(1), nonograms.None()))
+    assertTrue(checkType(userGrid.getUserSolution(5)(1), models.None()))
 
     // TEST RESET: assert that ALL cells have None state.
     userGrid.resetGame()
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
-      assertTrue(checkType(userGrid.getUserSolution(x)(y), nonograms.None()))
+      assertTrue(checkType(userGrid.getUserSolution(x)(y), models.None()))
     }
   }
 
@@ -314,10 +315,10 @@ class NonogramsAppTest extends TestCase("app") {
     userGridNonStrict.validateAllMaybe()
 
     // TEST: the untouched None() state is inaffected by all the changes
-    assertTrue(checkType(userGridNonStrict.getUserSolution(2)(0), nonograms.None()))
-    assertTrue(checkType(userGridNonStrict.getUserSolution(2)(1), nonograms.None()))
-    assertTrue(checkType(userGridYesStrict.getUserSolution(2)(0), nonograms.None()))
-    assertTrue(checkType(userGridYesStrict.getUserSolution(2)(1), nonograms.None()))
+    assertTrue(checkType(userGridNonStrict.getUserSolution(2)(0), models.None()))
+    assertTrue(checkType(userGridNonStrict.getUserSolution(2)(1), models.None()))
+    assertTrue(checkType(userGridYesStrict.getUserSolution(2)(0), models.None()))
+    assertTrue(checkType(userGridYesStrict.getUserSolution(2)(1), models.None()))
 
     // TEST: MaybeEmpty => Empty always, whatever the real value, whatever the strict mode
     assertTrue(checkType(userGridYesStrict.getUserSolution(0)(0), Empty()))
@@ -372,10 +373,10 @@ class NonogramsAppTest extends TestCase("app") {
     // To be continued
 
     // TEST: the untouched None() state is unaffected by all the changes
-    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(0), nonograms.None()))
-    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(1), nonograms.None()))
-    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(2), nonograms.None()))
-    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(3), nonograms.None()))
+    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(0), models.None()))
+    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(1), models.None()))
+    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(2), models.None()))
+    assertTrue(checkType(userGridYesStrict.getUserSolution(5)(3), models.None()))
   }
 
   /**
@@ -407,7 +408,7 @@ class NonogramsAppTest extends TestCase("app") {
     // filled correctly + maybe state: false
     assertFalse(userGrid.isFinishedCache)
 
-    userGrid.change(0, 1, nonograms.None())
+    userGrid.change(0, 1, models.None())
     userGrid.change(1, 1, Filled())
     // filled partially + other filled : false
     assertFalse(userGrid.isFinishedCache)

@@ -1,48 +1,18 @@
-package heigvd.nonograms
+package heigvd.nonograms.views
 
 import com.github.dunnololda.scage.ScageLib._
-import com.github.dunnololda.scage.support.{ScageColor, Vec}
+import com.github.dunnololda.scage.support.{Vec}
+import heigvd.nonograms.models._
+import heigvd.nonograms.utils._
 
 import scalaj.http._
 
-object selectedGrid {
-  var grid: Grid = new Grid()
-  var userGrid: UserGrid = new UserGrid(grid)
-
-  def setGrid(g: Grid, checkMode: Boolean = false) = {
-    grid = g
-    userGrid = new UserGrid(grid)
-    userGrid.checkMode = checkMode
-  }
-  def getGrid() = grid
-  def getUserGrid() = userGrid
-}
-
-object User {
-  private val default = "user" + scala.util.Random.nextInt(Integer.MAX_VALUE)
-  var current: String = ""
-
-  /** Get the user name or the default one is undefined */
-  def getUser = {
-    if (current.equals("")) {
-      default
-    } else {
-      current
-    }
-  }
-}
-
-object Colors {
-  val METRO_RED = new ScageColor("Metro Red", 0xd1, 0x11, 0x41)
-  val METRO_GREEN = new ScageColor("Metro Green", 0x00, 0xb1, 0x59)
-  val METRO_BLUE = new ScageColor("Metro Blue", 0x00, 0xae, 0xdb)
-  val METRO_ORANGE = new ScageColor("Metro Orange", 0xf3, 0x77, 0x35)
-  val METRO_YELLOW = new ScageColor("Metro Yellow", 0xff, 0xc4, 0x25)
-}
-
+/**
+  * View to play the game - the most important and complex part of this project!
+  */
 object NonogramsOffline extends Screen() with MultiController {
-  def g: Grid = selectedGrid.getGrid()
-  def userGrid: UserGrid = selectedGrid.getUserGrid()
+  def g: Grid = SelectedGrid.getGrid()
+  def userGrid: UserGrid = SelectedGrid.getUserGrid()
 
   val cal = java.util.Calendar.getInstance()
 
@@ -134,7 +104,7 @@ object NonogramsOffline extends Screen() with MultiController {
   validateButton.deactivate()
 
   val new_button = new Button(10, 210, 200, 70, xml("button.newgrid"), Colors.METRO_GREEN, NonogramsOffline, () => {
-    selectedGrid.setGrid(new Grid(sizeX, sizeY))
+    SelectedGrid.setGrid(new Grid(sizeX, sizeY))
   })
 
   val back_button = new Button(10, 50, 200, 70, xml("button.back"), Colors.METRO_ORANGE, NonogramsOffline, () => {
@@ -349,25 +319,8 @@ object NonogramsOffline extends Screen() with MultiController {
   }
 }
 
-// Timer ideas from http://otfried.org/scala/timers.html
-object Time {
-  private val form = new java.text.SimpleDateFormat("mm:ss:SSS")
-  def current (time:java.util.Calendar = java.util.Calendar.getInstance()) = form.format(time.getTime)
-}
 
-// Timer ideas from http://otfried.org/scala/timers.html
-object DateTime {
-  private val form = new java.text.SimpleDateFormat("YYYY-MM-YY HH:mm")
-  def current (time:java.util.Calendar = java.util.Calendar.getInstance()) = form.format(time.getTime)
-}
 
-object Timer {
-  def apply(interval: Int, repeats: Boolean = true)(op: => Unit) {
-    val timeOut = new javax.swing.AbstractAction() {
-      def actionPerformed(e : java.awt.event.ActionEvent) = op
-    }
-    val t = new javax.swing.Timer(interval, timeOut)
-    t.setRepeats(repeats)
-    t.start()
-  }
-}
+
+
+

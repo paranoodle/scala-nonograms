@@ -1,7 +1,11 @@
-package heigvd.nonograms
+package heigvd.nonograms.views
 
 import com.github.dunnololda.scage.ScageLib._
+import heigvd.nonograms.utils.{Colors, Button}
 
+/**
+  * Flexible number of view(s) to explain the game or show information.
+  */
 object HowToMenu extends Screen() with MultiController {
   backgroundColor = WHITE
 

@@ -1,4 +1,4 @@
-package heigvd.nonograms
+package heigvd.nonograms.models
 
 /**
   * Types of cells fot the game played by a user.

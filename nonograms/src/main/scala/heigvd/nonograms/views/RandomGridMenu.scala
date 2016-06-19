@@ -1,8 +1,12 @@
-package heigvd.nonograms
+package heigvd.nonograms.views
 
 import com.github.dunnololda.scage.ScageLib._
-import heigvd.nonograms.HowToMenu._
+import heigvd.nonograms.models.{SelectedGrid, Grid}
+import heigvd.nonograms.utils.{Colors, Button}
 
+/**
+  * View to select the size of the random grid.
+  */
 object RandomGridMenu extends Screen() with MultiController {
   backgroundColor = WHITE
 
@@ -13,7 +17,7 @@ object RandomGridMenu extends Screen() with MultiController {
     val sizeX = (i+1) * 5
     val sizeY = (j+1) * 5
     new Button(x + (210 * j), y - (80 * i), 200, 70, sizeX + "x" + sizeY + xml("main.grid"), Colors.METRO_BLUE, RandomGridMenu, () => {
-      selectedGrid.setGrid(new Grid(sizeX, sizeY))
+      SelectedGrid.setGrid(new Grid(sizeX, sizeY))
       NonogramsOffline.run()
     })
   }

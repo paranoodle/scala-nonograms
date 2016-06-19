@@ -1,6 +1,12 @@
-package heigvd.nonograms
+package heigvd.nonograms.views
 
 import com.github.dunnololda.scage.ScageLib._
+import heigvd.nonograms.models.User
+import heigvd.nonograms.utils.{Colors, Button}
+
+/**
+  * Launcher view with how-to, start game and set username options.
+  */
 
 object LauncherMainMenu extends ScreenApp(xml("main.title"), 800, 600) with MultiController {
   backgroundColor = WHITE

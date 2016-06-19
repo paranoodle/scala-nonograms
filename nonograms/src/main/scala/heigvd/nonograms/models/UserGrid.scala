@@ -1,6 +1,4 @@
-package heigvd.nonograms
-
-import heigvd.nonograms
+package heigvd.nonograms.models
 
 /**
   * Grid currently played by a user, with game state.
@@ -54,7 +52,7 @@ class UserGrid(grid: Grid) {
   // ********** USER SOLUTION ********** //
 
   // the array of cell state of the current game
-  private var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(nonograms.None())
+  private var userSolution: Array[Array[CellType]] = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
 
   // get the state of a single cell (getter)
   def getUserSolution(x: Int)(y:Int) : CellType = {
@@ -64,7 +62,7 @@ class UserGrid(grid: Grid) {
   // change the state of a single cell (setter) & update cache
   def change(x: Int, y: Int, state: CellType): Unit = {
     userSolution(x)(y) = state match {
-      case Tried() => nonograms.None()
+      case Tried() => None()
       case _ => state
     }
     // updates the cache
@@ -77,8 +75,8 @@ class UserGrid(grid: Grid) {
     if (maybeStatus) {
       userSolution(x)(y) = userSolution(x)(y) match {
         case None() => MaybeFilled()
-        case MaybeEmpty() => nonograms.None()
-        case MaybeFilled() => nonograms.None()
+        case MaybeEmpty() => None()
+        case MaybeFilled() => None()
         case _ => userSolution(x)(y)
       }
     } else {
@@ -86,8 +84,8 @@ class UserGrid(grid: Grid) {
       println(valid)
       userSolution(x)(y) = userSolution(x)(y) match {
         case None() => if (valid) Filled() else Tried()
-        case Empty() => nonograms.None()
-        case Filled() => nonograms.None()
+        case Empty() => None()
+        case Filled() => None()
         case _ => userSolution(x)(y)
       }
 
@@ -99,15 +97,15 @@ class UserGrid(grid: Grid) {
     if (maybeStatus) {
       userSolution(x)(y) = userSolution(x)(y) match {
         case None() => MaybeEmpty()
-        case MaybeEmpty() => nonograms.None()
-        case MaybeFilled() => nonograms.None()
+        case MaybeEmpty() => None()
+        case MaybeFilled() => None()
         case _ => userSolution(x)(y)
       }
     } else {
       userSolution(x)(y) = userSolution(x)(y) match {
         case None() => Empty()
-        case Empty() => nonograms.None()
-        case Filled() => nonograms.None()
+        case Empty() => None()
+        case Filled() => None()
         case _ => userSolution(x)(y)
       }
     }
@@ -117,8 +115,8 @@ class UserGrid(grid: Grid) {
   def removeAllMaybe() = {
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) = userSolution(x)(y) match {
-        case MaybeEmpty() => nonograms.None()
-        case MaybeFilled() => nonograms.None()
+        case MaybeEmpty() => None()
+        case MaybeFilled() => None()
         case _ => userSolution(x)(y)
       }
     }
@@ -144,7 +142,7 @@ class UserGrid(grid: Grid) {
 
   // reset the game to the starting point (all None)
   def resetGame() = {
-    userSolution = Array.fill[CellType](grid.sizeX, grid.sizeY)(nonograms.None())
+    userSolution = Array.fill[CellType](grid.sizeX, grid.sizeY)(None())
 
     // updates the cached values
     time_start_override = System.currentTimeMillis()
@@ -302,7 +300,7 @@ class UserGrid(grid: Grid) {
     val r = scala.util.Random
     for (x <- 0 until grid.sizeX; y <- 0 until grid.sizeY) {
       userSolution(x)(y) = r.nextInt(6) match {
-        case 0 => nonograms.None()
+        case 0 => None()
         case 1 => Empty()
         case 2 => Filled()
         case 3 => MaybeEmpty()

@@ -1,5 +1,7 @@
 package heigvd.nonograms
 
+import heigvd.nonograms.models.{UserGrid, Grid}
+
 /**
   * Simple main to test grid / usergrid classes without the UI.
   */
