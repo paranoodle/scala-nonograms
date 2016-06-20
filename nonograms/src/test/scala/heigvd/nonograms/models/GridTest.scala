@@ -44,7 +44,7 @@ class GridTest extends TestCase {
       List(false, true, true)
     )
     val gridNonHumanReadable = new Grid(preparedGrid, false)
-    val gridYesHumanReadable = new Grid(preparedGrid, true)
+    val gridYesHumanReadable = new Grid(preparedGrid) // default should be human-readable
 
     assertEquals(preparedGrid(0).size, gridNonHumanReadable.sizeY)
     assertEquals(preparedGrid.size, gridNonHumanReadable.sizeX)
@@ -77,7 +77,7 @@ class GridTest extends TestCase {
       List(true, false)
     )
     val grid3 = new Grid(preparedGridB, false)
-    val grid4 = new Grid(preparedGridB, true)
+    val grid4 = new Grid(preparedGridB) // default should be human-readable
 
     assertEquals(false, grid3.solution(0)(0))
     assertEquals(true, grid3.solution(0)(1))
@@ -103,7 +103,7 @@ class GridTest extends TestCase {
       "01",
       "10"
     )
-    val grid1 = new Grid(preparedGrid, 1, true)
+    val grid1 = new Grid(preparedGrid, 1) // default should be human-readable
     val grid2 = new Grid(preparedGrid, 2, false)
 
     assertEquals(false, grid1.solution(0)(0))
@@ -119,6 +119,16 @@ class GridTest extends TestCase {
     assertEquals(true, grid2.solution(1)(1))
     assertEquals(true, grid2.solution(2)(0))
     assertEquals(false, grid2.solution(2)(1))
+  }
+
+  /**
+    * This tests nothing. It's only print methods...
+    */
+  def testPrintsDoNotCrash(): Unit = {
+    val grid = new Grid()
+    grid.printGrid()
+    grid.printHints()
+    assert(true)
   }
 
   /**

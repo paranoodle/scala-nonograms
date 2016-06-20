@@ -8,6 +8,89 @@ class UserGridTest extends TestCase {
 
   // ********** TESTS USER GRID ********** //
 
+  /**
+    * Tests penalties
+    */
+  def testPenalties {
+    val s = List(
+      List(true, false),
+      List(false, false)
+    )
+    val grid = new Grid(s)
+    val userGrid = new UserGrid(grid)
+    userGrid.checkMode = true
+
+    // 0 penalties at start up
+    assertEquals(0, userGrid.numberPenaltiesCache)
+    assertEquals(0, userGrid.penaltiesTime)
+
+    // does en error in strict mode, penalties should have changed
+    userGrid.leftClick(1,1)
+    assertEquals(1, userGrid.numberPenaltiesCache)
+    assert(userGrid.penaltiesTime > 0)
+  }
+
+  /**
+    * Test if two longs are equals with a given delta precision.
+    */
+  private def isEqual(expected: Long, value: Long, delta : Long) : Unit = {
+    assert(value > expected - delta)
+    assert(value < expected + delta)
+  }
+
+  /**
+    * Tests all the timings in user grid.
+    */
+  def testTimes (): Unit = {
+    val s = List(
+      List(true, false),
+      List(false, false)
+    )
+    val grid = new Grid(s)
+    val userGrid = new UserGrid(grid)
+    // tolerance of 10ms...
+    val delta = 10
+    val timeToSleep = delta * 10
+
+    def start = userGrid.time_start()
+    def elapsed = userGrid.time_elapsed
+    def finished = userGrid.time_finished()
+
+    // TEST start: start is current, elapsed is 0
+    val myStart = System.currentTimeMillis()
+    isEqual(myStart, start, delta)
+    isEqual(0, elapsed, delta)
+    isEqual(0, finished, delta)
+
+    // TEST game is going on: values updates
+    Thread.sleep(timeToSleep)
+
+    isEqual(myStart, start, delta)
+    isEqual(timeToSleep, elapsed, delta)
+    isEqual(timeToSleep, finished, delta)
+
+    // TEST game finished : values freeze to end time
+    Thread.sleep(timeToSleep)
+    userGrid.change(0,0,Filled())
+
+    val myend = System.currentTimeMillis() - myStart
+    isEqual(myStart, start, delta)
+    isEqual(myend, elapsed, delta)
+    isEqual(myend, finished, delta)
+
+    // TEST after game is finished for a long time yet: values keeps their values
+    Thread.sleep(timeToSleep)
+    isEqual(myStart, start, delta)
+    isEqual(myend + timeToSleep, elapsed, delta)
+    isEqual(myend, finished, delta)
+
+    // TEST game reset : values reset.
+    userGrid.resetGame()
+    isEqual(System.currentTimeMillis(), start, delta)
+    isEqual(0, elapsed, delta)
+    isEqual(0, finished, delta)
+  }
+
   // helper to check type
   private def checkType(value: CellType, typ: CellType): Boolean = value match {
     case `typ` => true
@@ -179,7 +262,18 @@ class UserGridTest extends TestCase {
     assertTrue(checkType(userGridYesStrict.getUserSolution(0)(2), Tried()))
     assertTrue(checkType(userGridYesStrict.getUserSolution(0)(3), MaybeFilled()))
 
-    // To be continued
+    // To be continued with real tests of behavior, one for each case....
+    // test two clicks (right and left) on all possible states (6), in two modes (strict or not), with or without draft activated.
+
+    // tests ALL to click all the cells to go through all the code lines.
+    userGridYesStrict.leftClick(0, 0) // default is false
+    userGridYesStrict.rightClick(0, 0)
+    for(x <- 0 until grid.sizeX - 1) {
+      for(y <- 0 until grid.sizeY) {
+        userGridYesStrict.leftClick(x, y, (y % 2 == 0))
+        userGridYesStrict.rightClick(x, y, (y % 2 == 0))
+      }
+    }
 
     // TEST: the untouched None() state is unaffected by all the changes
     assertTrue(checkType(userGridYesStrict.getUserSolution(5)(0), models.None()))
@@ -231,6 +325,17 @@ class UserGridTest extends TestCase {
     // filled correctly: true
     assertTrue(userGrid.isFinishedCache)
 
+  }
+
+  /**
+    * This tests nothing. It's only print methods...
+    */
+  def testPrintsDoNotCrash (): Unit = {
+    val grid = new Grid()
+    val userGrid = new UserGrid(grid)
+    userGrid.generateRandomState()
+    userGrid.printMyGrid()
+    assert(true)
   }
 
   /**
