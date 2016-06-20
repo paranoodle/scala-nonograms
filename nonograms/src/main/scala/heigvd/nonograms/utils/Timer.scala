@@ -1,5 +1,7 @@
 package heigvd.nonograms.utils
 
+import javax.swing.Timer
+
 /**
   * Manage time formats and timer.
   */

@@ -118,7 +118,8 @@ object NonogramsOffline extends Screen() with MultiController {
 
   val back_button = new Button(marginWidth, buttonHeightBottom(0), buttonWidth, buttonHeight
     , xml("button.back"), Colors.METRO_ORANGE, NonogramsOffline, () => {
-    stop()
+      timer.stop()
+      stop()
   })
 
   val reset_button = new Button(marginWidth, buttonHeightBottom(1), buttonWidth, buttonHeight,
