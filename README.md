@@ -1,13 +1,10 @@
-# scala-nonograms
+# Nonograms game in Scala
 
-A scala project at HEIG-VD, Switzerland.
+This is a Scala project done at HEIG-VD, Switzerland. It is a stand-alone game about [Nonograms](https://en.wikipedia.org/wiki/Nonogram) using the Scage library with maven.
 
-A stand-alone game about [nonograms](https://en.wikipedia.org/wiki/Nonogram) using the scage library with maven.
+It was done in Spring 2016 by [Eleonore d'Agostino](https://github.com/paranoodle) & [Valentin Minder](https://github.com/ValentinMinder).
 
-Authors:
-
-- [Eleonore d'Agostino](https://github.com/paranoodle)
-- [Valentin Minder](https://github.com/ValentinMinder)
+Please find the more details about this project in the [`REPORT`](REPORT.md) file.
 
 ## Scage Library
 
@@ -17,7 +14,7 @@ We used the scage library to make our project run. Scage is a framework to write
 
 ### How to test with maven
 
-Type: `mvn clean test`. All tests must be successful.
+Type: `mvn clean test`. All 18 tests must be successful.
 
 ### How to build with maven
 
@@ -25,13 +22,13 @@ Type: `mvn clean install`
 
 Or, to build and skip the tests, type: `mvn clean package -Dmaven.test.skip`
 
-The target is available under `target/nonograms-##.zip`
+The target for linux/unix is available under `target/nonograms-##.zip`. Change the `build.properties` file to generate a zip for Windows.
 
 It contains a runnable script and all necessary librairies to be runnable stand-alone.
 
 To troobleshoot follow [these indications](https://github.com/dunnololda/scage/#for-maven-users).
 
-### How to test & build with IntelijIDEA
+### How to test & build with IntelliJ IDEA
 
 The very first time, you need to create all necessary file and dependancies with maven. Type `mvn clean compile`
 
