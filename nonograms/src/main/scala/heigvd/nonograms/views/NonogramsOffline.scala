@@ -25,7 +25,7 @@ object NonogramsOffline extends Screen() with MultiController {
   def idx = scala.util.Random.nextInt(Integer.MAX_VALUE)
 
   // timer to trigger action every second
-  val timer = Timer(2000) {
+  val timer = Timer(1000) {
     val i = idx
     println("heartbeat: sending data to AWS with ID #" + i)
 
@@ -40,7 +40,8 @@ object NonogramsOffline extends Screen() with MultiController {
       cal.setTimeInMillis(System.currentTimeMillis())
       val now = DateTime.current(cal)
       val data = "{" +
-        "\"user\":\""+ User.getUser + "\"," + // string
+        "\"username\":\""+ User.getUser + "\"," + // string - username OR unique ID
+        "\"user\":\""+ User.userID + "\"," + // string - unique ID
         "\"version\":\"" + "0.1" + "\"," + // string
         "\"grid_id\":" + g.gridid + "," + // int
         "\"time\":" + System.currentTimeMillis() + "," + // int
@@ -56,6 +57,7 @@ object NonogramsOffline extends Screen() with MultiController {
         "\"filled_value\":" + userGrid.numberFilledCache + "," +
         "\"filled_percent\":" + filled_percent + "," + // int
         "\"finished\":" + userGrid.isFinishedCache + "," + // bool
+        "\"checkMode\":" + userGrid.checkMode + "," + // date
         "\"production\":" + false + "" + // bool
         "}"
 
@@ -73,11 +75,11 @@ object NonogramsOffline extends Screen() with MultiController {
   private val buttonHeight = 70
   private val marginWidth = 10
   private val buttonWidth = 200
-  private val marginHeight = 50
+  private val marginHeight = 30
   private val buttonHeightOffset = buttonHeight + marginWidth
   private val menuWidth = buttonWidth + 2 * marginWidth
   private def buttonHeightBottom (x:Int) = marginHeight + x * buttonHeightOffset
-  private def buttonHeightTop (x:Int) = windowHeight - marginWidth - (x+1) * buttonHeightOffset
+  private def buttonHeightTop (x:Int) = windowHeight - marginHeight - (x+1) * buttonHeightOffset
 
   var maybeStatus = false
   val maybeButton : ToggleButton = new ToggleButton(marginWidth, buttonHeightTop(0), buttonWidth, buttonHeight,
@@ -113,12 +115,14 @@ object NonogramsOffline extends Screen() with MultiController {
 
   val new_button = new Button(marginWidth, buttonHeightBottom(2), buttonWidth, buttonHeight,
     xml("button.newgrid"), Colors.METRO_GREEN, NonogramsOffline, () => {
-    SelectedGrid.setGrid(new Grid(sizeX, sizeY))
+      // generate a new grid with the same mode.
+      val oldMode = SelectedGrid.userGrid.checkMode
+      SelectedGrid.setGrid(new Grid(sizeX, sizeY))
+      SelectedGrid.userGrid.checkMode = oldMode
   })
 
   val back_button = new Button(marginWidth, buttonHeightBottom(0), buttonWidth, buttonHeight
     , xml("button.back"), Colors.METRO_ORANGE, NonogramsOffline, () => {
-      timer.stop()
       stop()
   })
 
@@ -155,7 +159,7 @@ object NonogramsOffline extends Screen() with MultiController {
   /* layout params for information about game status */
   def Xprint_data = 10
   def Xprint_text = Xprint_data + textOffset
-  def Yprint_text (i:Int) = 430 - i * fullSize
+  def Yprint_text (i:Int) = 410 - i * fullSize
   val textOffset = gridSpacing * 5
 
   /* Return the cal as a formatted string. Update cal first. */
@@ -227,15 +231,19 @@ object NonogramsOffline extends Screen() with MultiController {
     // information about current game status / evolution
     if (userGrid.isFinishedCache) {
       progress_bar.text = xml("congrats.game")
-      print(xml("finished.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK, "default")
-      timer.stop()
     } else {
-      print(xml("gaming.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK, "default")
+      progress_bar.text = xml("gaming.game")
+    }
+
+    if (userGrid.checkMode) {
+      print(xml("modestrict.game"), Vec(Xprint_text, Yprint_text(4) - 10), BLACK, "default")
+    } else {
+      print(xml("modefree.game"), Vec(Xprint_text, Yprint_text(4) - 10), BLACK, "default")
     }
 
     // current state of game
     val text = filled_percent + "% (" + userGrid.numberFilledCache + "/" + g.numberFilledCache + ")"
-    print(text, Vec(Xprint_text, Yprint_text(4) - 10), BLACK)
+    print(text, Vec(Xprint_text, Yprint_text(5) - 10), BLACK)
 
     // timers
     cal.setTimeInMillis(time_reference_to_use)
@@ -261,13 +269,17 @@ object NonogramsOffline extends Screen() with MultiController {
   interface {
     print(xml("launcher.info"), 10, 10, BLACK)
     // information about current game status / evolution
-    print(xml("playing.game"), Vec(Xprint_data, Yprint_text(4) - 10), BLACK)
     print(xml("time.game"), Vec(Xprint_data, Yprint_text(1)), BLACK)
     print(xml("penalties.game"), Vec(Xprint_data, Yprint_text(2)), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(2) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(2) - 2), BLACK)
     print(xml("total.game"), Vec(Xprint_data, Yprint_text(3)), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(3) - 2), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 2), BLACK)
     drawLine(Vec(Xprint_data, Yprint_text(3) - 0), Vec(Xprint_data + gridSpacing * 10, Yprint_text(3) - 0), BLACK)
+
+    print(xml("mode.game"), Vec(Xprint_data, Yprint_text(4) - 10), BLACK)
+    print(xml("playing.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK)
+    print(xml("user.game"), Vec(Xprint_data, windowHeight - marginHeight), BLACK)
+    print(User.getUser, Vec(Xprint_text, windowHeight - marginHeight), BLACK)
     val useless = g.numberFilled()
   }
 

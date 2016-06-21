@@ -208,11 +208,24 @@ Draft
     </message>
 
     <message id="congrats.game">
-      CONGRATS!
+      Finished! CONGRATS!
     </message>
 
-    <message id="finished.game">
-        Game finished! CONGRATS!
+    <message id="user.game">
+        User :
+    </message>
+
+
+    <message id="mode.game">
+        In mode :
+    </message>
+
+    <message id="modestrict.game">
+        Strict
+    </message>
+
+    <message id="modefree.game">
+        Free
     </message>
 
 </messages>
