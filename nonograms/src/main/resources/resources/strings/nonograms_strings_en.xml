@@ -160,6 +160,10 @@ Strict Mode
         Cat
     </message>
 
+    <message id="grid.name.challenge">
+        CHALLENGE
+    </message>
+
     <!-- GAME PLAY MENU -->
 
     <!-- Controls -->

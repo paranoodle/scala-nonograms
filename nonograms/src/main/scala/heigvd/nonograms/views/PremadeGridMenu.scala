@@ -42,6 +42,17 @@ object PremadeGridMenu extends Screen() with MultiController {
     NonogramsOffline.run()
   })
 
+  val challenge_button = new Button(x, y - 240, 200, 70, xml("grid.name.challenge") + " (15x15)", Colors.METRO_YELLOW, PremadeGridMenu, () => {
+    SelectedGrid.setGrid(new Grid(List(
+      "011111001111100", "011111111000110", "110011110011010",
+      "111110110011010", "111111111000110", "011111111111100",
+      "011000000001100", "001100000011000", "000110000110000",
+      "000011001100000", "000001001000000", "000001001000000",
+      "000111001111000", "001000000000100", "001111111111100"
+    ), 1, true), checkMode)
+    NonogramsOffline.run()
+  })
+
   val back_button = new Button(50, 50, 200, 70, xml("button.back"), Colors.METRO_ORANGE, PremadeGridMenu, () => {
     PremadeGridMenu.stop()
   })
