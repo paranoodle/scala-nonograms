@@ -18,4 +18,7 @@ project/plugins/project/
 
 # Signing secrets
 *keystore
-*local-build.properties
+
+# contains the values for the certificate signing. Ignore this file with:
+# git update-index --[no-]assume-unchanged nonograms/local.build.properties
+# *local-build.properties

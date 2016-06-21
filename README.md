@@ -10,45 +10,95 @@ Please find the more details about this project in the [`REPORT`](REPORT.md) fil
 
 We used the scage library to make our project run. Scage is a framework to write simple 2D opengl games, written in Scala. [Find out more about Scage](https://github.com/dunnololda/scage/#introduction).
 
-## Run & Build Instructions
-
-### How to test with maven
-
-Type: `mvn clean test`. All 18 tests must be successful.
-
-### How to build with maven
-
-Type: `mvn clean install`
-
-Or, to build and skip the tests, type: `mvn clean package -Dmaven.test.skip`
-
-The target for linux/unix is available under `target/nonograms-##.zip`. Change the `build.properties` file to generate a zip for Windows.
-
-It contains a runnable script and all necessary librairies to be runnable stand-alone.
-
-To troobleshoot follow [these indications](https://github.com/dunnololda/scage/#for-maven-users).
-
-### How to test & build with IntelliJ IDEA
-
-The very first time, you need to create all necessary file and dependancies with maven. Type `mvn clean compile`
-
-In the IDE, try to run the main class (NonogramsOffline.scala). Then, edit the config launch of the last run and add under `VM Options:`
-
-`-Djava.library.path=target/natives -DLWJGL_DISABLE_XRANDR=true -Dfile.encoding=UTF-8`
-
-Alternatively, follow the instructions [here](https://github.com/dunnololda/scage/#intellij-idea).
-
+## Run instructions
 ### How to run the ZIP release (all OS): easy
 
-1. Download the latest release
- - from the [releases page](https://github.com/paranoodle/scala-nonograms/releases) 
- - from [here for UNIX/MacOSX/Linux](https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/nonograms-0.1-linux.zip) 
- - from [here for Windows](https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/nonograms-0.1-windows.zip)
+1. Download the latest release from the [releases page](https://github.com/paranoodle/scala-nonograms/releases). Alternatively, try our Dropbox releases: from [here for UNIX/MacOSX/Linux](https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/nonograms-0.1-linux.zip) or from [here for Windows](https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/nonograms-0.1-windows.zip).
 1. Unzip it
 1. Run it with the given script
 	
 	- on Windows with the `run.bat` file
 	- on UNIX with the `run.sh` file. From the terminal, you may need to change execution rights with `chmod u+x run.sh` and then run with `sh ./run.sh`.
+
+### How to run the JNLP release with Java Web Start (all OS): harder
+
+See futher down. It is really complicated.
+
+## Build Instructions
+
+First of all, move one level down to the project level with: `cd nonograms`. The file `local-build.properties` must exists, even if empty. If it is not there, do: `touch local-build.properties`.
+
+### How to build a ZIP release with maven
+
+Type: `mvn clean install` or `mvn clean package` or `mvn clean package -Pbuild` (they all have the same 
+
+To build but skip the tests, type: `mvn clean package -Dmaven.test.skip`
+
+The target for linux/unix is now available under `target/nonograms-linux.zip`. It is a zip containing a runnable script and all necessary librairies to be runnable stand-alone.
+
+- To speed up the process when developping, use our `quickrun.sh` which does the compilation (without clean & test) and directly runs the application.
+- To compile for another OS (eg. Windows), open the `build.properties` file, go to the key `os.type = linux` and change it to `windows`.
+- To compile for another language (eg. French), open the `src/main/resources/maven.properties` file, go to the key `xml.lang = en` and change it to `fr`. 
+- You are free to translate the game in any another language. Translate the strings ressources in `src/main/resources/resources/strings/nonograms_strings_XX.xml` where `XX` is the language abbreviation you use in the above `maven.properties`
+
+To troobleshoot or more details follow [the original indications from the Scage library](https://github.com/dunnololda/scage/#for-maven-users) or [the indications in the original readme file](nonograms/readme).
+
+### How to build a JNLP release with maven
+
+First, you need a valid signing certificate in the top directory. It can be a self-signed certificate, but it will create issues to run the jnlp file (see below). Add theses lines to your `local-build.properties` file.
+
+```
+# replace the lines below with the correct data and add this file to .gitignore or 
+# git update-index --assume-unchanged local-build.properties
+keystore = XYZFileName
+keystore.alias = XYZ
+keystore.pass = XYZ
+key.pass = XYZ
+```
+
+Then, you need hosting to host your web application. You need to put the url it in your `pom.xml` file, under the `<url>` tag of the project.
+
+```
+<name>Nonograms</name>
+<description>Simple Nonograms Project Stub</description>
+<url>https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/jnlp</url><
+```
+
+We used a public dropbox, namely 
+
+`https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/jnlp/nonograms-run.jnlp`
+
+Finally, type `mvn clean package -Pwebstart`. It will sign ALL the files including the existing librairies, the process is quite long.
+
+The files are available in `target/jnlp`. Move the WHOLE directory to your hosting site. 
+
+Distribute the jnlp destriptor: `target/jnlp/nonograms-run.jnlp`. Running it with java will download the web application from your hosting.
+
+To troobleshoot or more details follow [the indications in the original readme file](nonograms/readme).
+
+### How to test with maven
+
+Type: `mvn clean test`. All 18 tests must be successful.
+
+### How to test & build with IntelliJ IDEA
+
+Some people prefer to work with IDE, although it is not necessary for this project. You will need Maven the very first time, though.
+
+The very first time, you need to create all necessary file and dependancies with maven. Type `mvn clean compile`
+
+In the IDE, try to run the main UI class (**`LauncherMainMenu.scala`** in `src/main/scala/heigvd/nonograms/views/`). This should fail with an error like `Exception in thread "main" java.lang.UnsatisfiedLinkError: no lwjgl in java.library.path`. But it created a run configuration in the top right corner. Then, edit the config launch of the last run and add under `VM Options:`
+
+`-Djava.library.path=target/natives -DLWJGL_DISABLE_XRANDR=true -Dfile.encoding=UTF-8`
+
+To troobleshoot or more details follow [the original indications from the Scage library](https://github.com/dunnololda/scage/#intellij-idea).
+
+### How to test and check coverage with InteliJ IDEA
+
+First, you need the project to work in IntelliJ from previous point.
+
+Go to the `src/main/scala/heigvd/nonograms/models` package. Right-click and select **Run with coverage**. You should see an new view with the line and method coverage for each model class.
+
+## Run Instructions (continued)
 
 ### How to run the JNLP release with Java Web Start (all OS): harder
 
