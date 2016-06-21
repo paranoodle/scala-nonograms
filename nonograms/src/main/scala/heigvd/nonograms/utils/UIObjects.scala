@@ -3,7 +3,7 @@ package heigvd.nonograms.utils
 import com.github.dunnololda.scage.ScageLib._
 
 /**
-  * Grafics Utils for buttons and toggle buttons.
+  * Grafics Utils for buttons, toggle buttons, and progress bars.
   */
 
 class Button(x: Int, y: Int, width: Int, height: Int,
@@ -53,5 +53,18 @@ class ToggleButton(x: Int, y: Int, width: Int, height: Int,
     color = activeColor
     text = activeText
     active = true
+  }
+}
+
+class ProgressBar(x: Int, y: Int, width: Int, height: Int,
+    fillColor: ScageColor = BLACK, emptyColor: ScageColor = GRAY,
+    var text: String = "", screen: Screen with MultiController) {
+  val tly = y + height
+  var progress: Double = 0.0
+
+  screen.interface {
+    drawFilledRect(Vec(x, tly), width, height, emptyColor)
+    drawFilledRect(Vec(x, tly), (width * progress).toInt, height, fillColor)
+    print(text, Vec(x+(width/2), y+(height/2)), WHITE, align="center")
   }
 }

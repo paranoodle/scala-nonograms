@@ -127,13 +127,8 @@ object NonogramsOffline extends Screen() with MultiController {
     userGrid.resetGame()
   })
 
-
-  val percent_full_button = new Button(marginWidth, buttonHeightBottom(3), buttonWidth, buttonHeight/2,
-    xml("gaming.game"), Colors.METRO_RED, NonogramsOffline, () => {
-  })
-
-  var percent_partial_button = new Button(marginWidth, buttonHeightBottom(3), 2, buttonHeight/2,
-    "", Colors.METRO_GREEN, NonogramsOffline, () => {})
+  val progress_bar = new ProgressBar(marginWidth, buttonHeightBottom(3), buttonWidth, buttonHeight/2,
+    Colors.METRO_GREEN, Colors.METRO_RED, xml("gaming.game"), NonogramsOffline)
 
   // ********** GRID MANAGEMENT ********** //
   def g: Grid = SelectedGrid.getGrid()
@@ -231,6 +226,7 @@ object NonogramsOffline extends Screen() with MultiController {
 
     // information about current game status / evolution
     if (userGrid.isFinishedCache) {
+      progress_bar.text = "Finished!"
       print(xml("finished.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK, "default")
       timer.stop()
     } else {
@@ -258,9 +254,7 @@ object NonogramsOffline extends Screen() with MultiController {
       print(time_string, Vec(Xprint_text, Yprint_text(2)), BLACK, "default")
     }
 
-
-    percent_partial_button = new Button(marginWidth, buttonHeightBottom(3), filled_percent * 2, buttonHeight/2,
-      "", Colors.METRO_GREEN, NonogramsOffline, () => {})
+    progress_bar.progress = filled_percent / 100.0
   }
 
   // non-moving / editable items in interface.
@@ -347,9 +341,3 @@ object NonogramsOffline extends Screen() with MultiController {
       )
   }
 }
-
-
-
-
-
-
