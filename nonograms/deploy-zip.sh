@@ -1,8 +1,9 @@
 #!/bin/sh
 # clean, test, build (zip) and post it to release
 
+# change OS here
 os=linux
-v=nonograms-0.1
+v=nonograms-1.0
 out="/Users/val/Dropbox/Public/heig-nonograms-EdAVM/"
 target=target/"$v"-"$os"
 

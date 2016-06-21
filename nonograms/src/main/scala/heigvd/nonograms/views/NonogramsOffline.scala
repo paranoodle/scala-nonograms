@@ -18,7 +18,7 @@ object NonogramsOffline extends Screen() with MultiController {
   val cal = java.util.Calendar.getInstance()
 
   // heartbeat towards elastic server.
-  val uri = "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonogramsv01/stats/"
+  val uri = "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonogramsv10/stats/"
   // TODO trigger to commit or not
   val commitResult = false
   // generate random indices
@@ -42,7 +42,7 @@ object NonogramsOffline extends Screen() with MultiController {
       val data = "{" +
         "\"username\":\""+ User.getUser + "\"," + // string - username OR unique ID
         "\"user\":\""+ User.userID + "\"," + // string - unique ID
-        "\"version\":\"" + "0.1" + "\"," + // string
+        "\"version\":\"" + "1.0" + "\"," + // string
         "\"grid_id\":" + g.gridid + "," + // int
         "\"time\":" + System.currentTimeMillis() + "," + // int
         "\"time_p\":\"" + System.currentTimeMillis() + "\"," + // int
@@ -58,7 +58,7 @@ object NonogramsOffline extends Screen() with MultiController {
         "\"filled_percent\":" + filled_percent + "," + // int
         "\"finished\":" + userGrid.isFinishedCache + "," + // bool
         "\"checkMode\":" + userGrid.checkMode + "," + // date
-        "\"production\":" + false + "" + // bool
+        "\"production\":" + true + "" + // bool
         "}"
 
       println (data)

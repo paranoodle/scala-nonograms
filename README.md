@@ -13,7 +13,7 @@ We used the scage library to make our project run. Scage is a framework to write
 ## Run instructions
 ### How to run the ZIP release (all OS): easy
 
-1. Download the latest release from the [releases page](https://github.com/paranoodle/scala-nonograms/releases). Alternatively, try our Dropbox releases: from [here for UNIX/MacOSX/Linux](https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/nonograms-0.1-linux.zip) or from [here for Windows](https://dl.dropboxusercontent.com/u/46998912/heig-nonograms-EdAVM/nonograms-0.1-windows.zip).
+1. Download the latest release from the [releases page](https://github.com/paranoodle/scala-nonograms/releases).
 1. Unzip it
 1. Run it with the given script
 	
