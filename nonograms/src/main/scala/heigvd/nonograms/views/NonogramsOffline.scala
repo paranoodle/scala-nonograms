@@ -226,7 +226,7 @@ object NonogramsOffline extends Screen() with MultiController {
 
     // information about current game status / evolution
     if (userGrid.isFinishedCache) {
-      progress_bar.text = "Finished!"
+      progress_bar.text = xml("congrats.game")
       print(xml("finished.game"), Vec(Xprint_data, Yprint_text(5) - 10), BLACK, "default")
       timer.stop()
     } else {

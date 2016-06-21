@@ -120,6 +120,24 @@ At the HEIG-VD / HES-SO - Yverdon, Switzerland
         How to Play
     </message>
 
+    <message id="button.tofree">
+        Switch to Free Mode
+    </message>
+
+    <message id="button.tostrict">
+        Switch to Strict Mode
+    </message>
+
+    <message id="button.infree">
+Currently in
+Free Mode
+    </message>
+
+    <message id="button.instrict">
+Currently in
+Strict Mode
+    </message>
+
     <!-- USERNAME -->
     <message id="button.username.change">
         Change Username
@@ -183,6 +201,10 @@ Draft
 
     <message id="gaming.game">
         ... keep playing ...
+    </message>
+
+    <message id="congrats.game">
+      CONGRATS!
     </message>
 
     <message id="finished.game">
