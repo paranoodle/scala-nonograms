@@ -27,7 +27,7 @@ object PremadeGridMenu extends Screen() with MultiController {
     SelectedGrid.setGrid(new Grid(List(
       "0000010001", "1100011111", "1000011111", "1000001111", "1000000100",
       "1000111110", "1001111110", "1011111110", "1111111101"
-    ), 1, true), checkMode)
+    ), 2, true), checkMode)
     NonogramsOffline.run()
   })
 
@@ -38,7 +38,7 @@ object PremadeGridMenu extends Screen() with MultiController {
       "000001000011101", "000001000011101", "000001000001001",
       "000001100000011", "000001100000111", "000001110001111",
       "000001111001111", "000001111001111", "000001110101111"
-    ), 1, true), checkMode)
+    ), 3, true), checkMode)
     NonogramsOffline.run()
   })
 
@@ -49,7 +49,7 @@ object PremadeGridMenu extends Screen() with MultiController {
       "011000000001100", "001100000011000", "000110000110000",
       "000011001100000", "000001001000000", "000001001000000",
       "000111001111000", "001000000000100", "001111111111100"
-    ), 1, true), checkMode)
+    ), 4, true), checkMode)
     NonogramsOffline.run()
   })
 
