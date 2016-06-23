@@ -20,17 +20,18 @@ object NonogramsOffline extends Screen() with MultiController {
   // heartbeat towards elastic server.
   val uri = "http://search-elastic-search-heig-3nhbodzwhflo56pew23jotan6a.eu-central-1.es.amazonaws.com/nonogramsv10/stats/"
   // TODO trigger to commit or not
-  val commitResult = false
+  val commitResult = true
   // generate random indices
   def idx = scala.util.Random.nextInt(Integer.MAX_VALUE)
 
   // timer to trigger action every second
   val timer = Timer(1000) {
     val i = idx
-    println("heartbeat: sending data to AWS with ID #" + i)
+
 
     // push the current result to server
     if (commitResult) {
+      println("heartbeat: sending data to AWS with ID #" + i)
       cal.setTimeInMillis(time_reference_to_use)
       val elapsed = time_string
       cal.setTimeInMillis(time_reference_to_use + userGrid.penaltiesTime)

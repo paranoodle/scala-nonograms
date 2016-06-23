@@ -2,7 +2,7 @@
 # build (without clean&test), unzip and launch
 
 os=linux
-v=nonograms-0.1
+v=nonograms-1.0
 target=target/"$v"-"$os"
 
 mvn package -Pbuild -Dmaven.test.skip
